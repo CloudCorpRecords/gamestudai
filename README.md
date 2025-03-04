@@ -1,142 +1,163 @@
 # GameStuAI Engine
 
-An open-source AI-assisted 3D game engine focused on making game development accessible to everyone, regardless of coding experience.
+GameStuAI Engine is an open-source AI-assisted 3D game engine that makes game development accessible to everyone. With a focus on no-code development, creators can build engaging games without writing a single line of code.
 
-## 🎮 Features
+## ✨ Features
 
-- **No-code Game Development**: Create games using visual scripting and intuitive interfaces
-- **3D Scene Editor**: Drag and drop objects to build your game world
-- **Visual Scripting System**: Create game logic without writing code
-- **Asset Management**: Import and organize 3D models, textures, audio, and more
-- **World Creator**: Easily create beautiful game worlds with terrain, objects, and environments
-- **3D Character Model Manager**: Seamlessly upload, manage, and animate character models
-- **AI-Powered Creation**: Generate assets, scripts, and game elements using AI
-- **Physics Engine**: Realistic physics simulation using cannon.js
-- **Cross-platform Export**: Build games for web, desktop, and mobile platforms
-- **Modern UI**: Beautiful and intuitive user interface
+- **No-Code Development**: Build games without writing code
+- **3D Scene Editor**: Create immersive worlds visually
+- **Visual Scripting System**: Create game logic with connected nodes
+- **Asset Management**: Import and organize 3D models, textures, and sounds
+- **AI-Powered Creation**: Generate assets, terrain, and game logic with AI
+- **Cross-Platform**: Export your games to web, desktop, and mobile
+- **Physics Engine**: Realistic physics simulation using cannon.js with Unreal Engine-like physics properties
+- **3D Character Model Manager**: Upload, preview, and integrate 3D character models
 
-## 🧠 AI-Assisted Features
+## 🚀 AI-Assisted Features
 
-GameStuAI takes game development to the next level with AI assistance:
+With GameStuAI Engine, you can use AI to:
 
-- **Asset Generation**: Create 3D models, textures, and sounds using AI prompts
-- **NPC Behavior**: Design complex character behaviors without coding
-- **Level Generation**: Generate complete game levels from text descriptions
-- **Visual Scripting with AI**: AI nodes that can dynamically create game content
-- **Terrain Generation**: Create landscapes and environments with natural text prompts
-- **AI Assistant**: Get help and suggestions as you build your game
+1. **Generate 3D Models**: Create characters, objects, and environments
+2. **Design Game Logic**: Describe the behavior you want, and AI will create the visual scripts
+3. **Create Terrain**: Generate detailed landscapes from text descriptions
+4. **Write Dialogue**: Create compelling character conversations
+5. **Optimize Performance**: Let AI suggest optimizations for your game
 
 ## 🌎 World Creation
 
-The GameStuAI World Creator makes it easy to build immersive game worlds:
+The World Creator in GameStuAI Engine includes:
 
-- **Terrain Editor**: Create landscapes with mountains, valleys, and different materials
-- **Object Placement**: Drag and drop 3D objects into your world with precise control
-- **Environment Settings**: Customize sky, lighting, weather, and atmospheric effects
-- **AI-generated Worlds**: Generate entire worlds from text descriptions
-- **Prefab System**: Create and reuse complex scene elements
+1. **Terrain Editor**:
+   - Sculpt terrain with intuitive brushes
+   - Apply different textures (grass, rock, sand, etc.)
+   - Generate terrain from heightmaps or AI descriptions
+   - Add water, trees, and foliage
 
-## 👤 Character Model Management
+2. **Object Placement**:
+   - Drag and drop objects into your scene
+   - Precise positioning with transform controls
+   - Advanced Unreal Engine-like physics properties for each object
+   - Group objects for easier management
 
-Our new Character Model Manager provides powerful tools for working with 3D characters:
+3. **Environment Controls**:
+   - Dynamic sky with time of day controls
+   - Weather effects (rain, snow, fog)
+   - Ambient lighting and atmospheric effects
+   - Post-processing effects for visual enhancements
 
-- **Model Library**: Upload, organize, and manage all your 3D character models
-- **Multiple Format Support**: Import models in GLB, GLTF, FBX, and OBJ formats
-- **3D Preview**: View and manipulate models in a real-time 3D preview
-- **Tag System**: Organize models with tags for easy searching and filtering
-- **Game Integration**: Add characters to your game world with position, rotation, and scale controls
-- **Behavior Assignment**: Apply various behaviors to characters (walkable, interactive, AI-controlled)
-- **Visual Script Integration**: Dedicated nodes for working with characters in the visual scripting system
-- **Animation Controls**: Manage character animations through a simple interface
+## 🧠 Visual Scripting
 
-## 🔍 Visual Scripting System
+Create game logic visually with our node-based scripting system:
 
-Create game logic without writing code using our enhanced visual scripting system:
+1. **Node Types**:
+   - Event nodes (collisions, triggers, input)
+   - Action nodes (movement, animations, sounds)
+   - Logic nodes (conditions, loops, variables)
+   - Math nodes (calculations, vectors, transformations)
+   - Physics nodes (forces, constraints, raycasts)
+   - Character Model Nodes (load, animate, control characters)
 
-- **Node-Based Interface**: Connect nodes to create complex logic flows
-- **Character Model Nodes**: Load, animate, and control character models
-- **Logic Nodes**: Implement conditions, loops, and branches
-- **Math Nodes**: Perform calculations and numerical operations
-- **Event Nodes**: Respond to game events like collisions and user input
-- **AI Nodes**: Leverage AI for dynamic content generation
-- **Comprehensive Documentation**: Built-in help for all node types
-- **Advanced Mode**: Toggle advanced nodes for more complex functionality
-- **Script Management**: Save, load, and share your visual scripts
+2. **Easy Connections**:
+   - Connect nodes with visual wires
+   - Color-coded connections for different data types
+   - Auto-suggestion for compatible connections
+   - Error checking and validation
 
-## 🚀 Getting Started
+3. **Custom Behaviors**:
+   - Create reusable behavior scripts
+   - Share scripts with the community
+   - Nest scripts for complex functionality
+   - AI suggestions for optimizing behaviors
 
-### Prerequisites
+## 💾 Getting Started
 
-- Node.js (v18 or newer)
-- npm or yarn
-
-### Easy Installation (Recommended)
-
-#### For Mac/Linux Users:
-1. Open Terminal in the project directory
-2. Run the following command:
-   ```
-   sh start.sh
-   ```
-
-#### For Windows Users:
-1. Double-click the `start.bat` file in the project folder
-   
-OR
-
-1. Open Command Prompt in the project directory
-2. Run:
-   ```
-   start.bat
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/CloudCorpRecords/gamestudai.git
+   cd gamestudai
    ```
 
-That's it! The script will check your Node.js version, install all dependencies, and start the development server automatically.
-
-### Manual Installation (Alternative)
-
-If you prefer to install manually:
-
-1. Install dependencies with legacy peer dependencies:
-   ```
-   npm install --legacy-peer-deps
+2. Install dependencies:
+   ```bash
+   npm install
    ```
 
-2. Start the development server:
-   ```
+3. Start the development server:
+   ```bash
    npm run dev
    ```
 
-3. Open your browser and navigate to `http://localhost:3000`
+4. Open your browser and navigate to:
+   ```
+   http://localhost:3000
+   ```
 
-## 📖 Using GameStuAI Engine
+## 🎮 Using GameStuAI Engine
+
+### World Builder
+
+1. **Terrain Editor**: Create landscapes with various terrain types and features.
+2. **Object Placement**: Add objects to your world with precise control.
+   - Control advanced physics properties like friction, bounciness, mass, and simulation type
+   - Choose from various physics materials (metal, wood, rubber, ice, etc.)
+   - Select different collision shapes for accurate physical behavior
+3. **Environment Settings**: Adjust lighting, sky, and weather effects.
 
 ### Character Model Manager
 
-1. **Accessing the Model Manager**:
-   - Click on the "Character Models" tab in the top navigation bar
+Access the Character Model Manager from the sidebar to:
 
-2. **Working with the Model Library**:
-   - **Upload Models**: Click the "Upload Model" button to add 3D models
-   - **Browse Models**: View all models in the library grid
-   - **Search & Filter**: Use the search bar and tag filters to find models
-   - **Select a Model**: Click on any model to view and edit it
+1. **Upload Models**: 
+   - Support for GLB, GLTF, FBX, and OBJ formats
+   - Add metadata and tags for organization
 
-3. **3D Model Preview**:
-   - View the selected model in a 3D preview window
-   - Orbit around the model to see it from all angles
-   - Edit model properties (name, type, tags) by clicking the "Edit" button
+2. **Manage Model Library**:
+   - Browse your collection of models
+   - Search and filter by tags
+   - Preview in real-time 3D viewer
 
-4. **Adding Models to Your Game**:
-   - Select a model from the library
-   - Use the integration panel to set position, rotation, and scale
-   - Select behaviors to apply to the character
-   - Click "Add to Game World" to place the model in your game
+3. **Add to Game World**:
+   - Drag and drop models into your game scene
+   - Configure position, rotation, and scale
+   - Apply physics behaviors (walkable, interactive, physics-driven)
 
-5. **Adding Models to Visual Scripts**:
-   - Select a model and click "Add to Script" to create a model node in the Visual Scripting editor
-   - Connect the model node to other nodes to create character behaviors
+4. **Use in Visual Scripts**:
+   - Connect character models to behaviors
+   - Control animations and movement
+   - Integrate with game events
 
-### Visual Scripting with Character Models
+### Physics System
+
+Our physics system is inspired by Unreal Engine, providing:
+
+1. **Material Properties**:
+   - Predefined materials like metal, wood, rubber, concrete
+   - Control friction, bounciness, and density
+   - Custom material properties for unique behaviors
+
+2. **Collision Shapes**:
+   - Box, sphere, cylinder, capsule shapes
+   - Convex hull for complex shapes
+   - Compound shapes for multi-part objects
+
+3. **Body Types**:
+   - Static (immovable objects)
+   - Dynamic (fully simulated physics)
+   - Kinematic (user-controlled with physics response)
+   - Simulated (character controllers with physics)
+
+4. **Constraints**:
+   - Hinges, point-to-point connections
+   - Distance constraints
+   - Springs and damping
+
+5. **Debug Visualization**:
+   - Real-time wireframe display of collision shapes
+   - Physics properties displayed in the inspector
+
+### Visual Scripting
+
+In the Visual Scripting editor, you can:
 
 1. **Character Model Nodes**:
    - **Load Model**: Loads a character model by ID
@@ -156,7 +177,7 @@ GameStuAI Engine is built with modern web technologies:
 - **React**: For building the user interface
 - **Three.js**: 3D rendering engine
 - **React Three Fiber**: React renderer for Three.js
-- **Cannon.js**: Physics engine
+- **Cannon.js**: Physics engine with Unreal Engine-like features
 - **ReactFlow**: Visual scripting system
 - **OpenAI API**: AI integration for asset generation and assistance
 - **TypeScript**: For type safety and better developer experience
@@ -184,7 +205,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] World creator with terrain and object placement
 - [x] AI assistance integration
 - [x] 3D Character Model Management
-- [ ] Physics integration
+- [x] Physics integration with Unreal Engine-like features
 - [ ] Animation system
 - [ ] Game logic templates
 - [ ] Export to web

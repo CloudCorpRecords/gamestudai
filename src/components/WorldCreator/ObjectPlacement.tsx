@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { 
@@ -10,6 +10,9 @@ import {
   PivotControls 
 } from '@react-three/drei';
 import './ObjectPlacement.css';
+import { nanoid } from 'nanoid';
+import { FaTrash, FaClone, FaCircle, FaCube, FaCylinder, FaFire, FaBox, FaBars, FaPlus, FaArrowsAlt } from 'react-icons/fa';
+import { PhysicsSystem, usePhysics, CollisionShape, BodyType, PhysicsMaterial, DEFAULT_PHYSICAL_PROPERTIES, PhysicalProperties } from '../../systems/PhysicsSystem';
 
 // Available object templates
 interface ObjectTemplate {
@@ -30,6 +33,7 @@ interface SceneObject {
   color?: string;
   name: string;
   properties: Record<string, any>;
+  physics: PhysicalProperties;
 }
 
 // Default object templates
@@ -105,7 +109,8 @@ const ObjectInstance: React.FC<{
   selected: boolean; 
   onClick: () => void; 
   onTransformChange: (position: [number, number, number], rotation: [number, number, number], scale: [number, number, number]) => void;
-}> = ({ object, selected, onClick, onTransformChange }) => {
+  physics: PhysicsSystem;
+}> = ({ object, selected, onClick, onTransformChange, physics }) => {
   const template = objectTemplates.find(t => t.id === object.templateId);
   const meshRef = useRef<THREE.Mesh>(null);
   
@@ -117,27 +122,74 @@ const ObjectInstance: React.FC<{
     }
   }, [object]);
   
+  useEffect(() => {
+    if (!meshRef.current || !object.physics.enabled) return;
+    
+    try {
+      if (physics.bodies.has(object.id)) {
+        physics.removeBody(object.id);
+      }
+      
+      physics.createBody(object.id, meshRef.current, object.physics);
+    } catch (e) {
+      console.error("Failed to create physics body:", e);
+    }
+    
+    return () => {
+      physics.removeBody(object.id);
+    };
+  }, [object.id, object.physics, physics, meshRef.current]);
+  
+  useEffect(() => {
+    if (!meshRef.current || !object.physics.enabled) return;
+    
+    if (object.physics.bodyType === BodyType.DYNAMIC || 
+        object.physics.bodyType === BodyType.SIMULATED) {
+      const sync = () => {
+        if (meshRef.current && !selected) {
+          physics.syncMeshWithBody(meshRef.current, object.id);
+        }
+        requestAnimationFrame(sync);
+      };
+      
+      const syncId = requestAnimationFrame(sync);
+      return () => {
+        cancelAnimationFrame(syncId);
+      };
+    }
+  }, [object.id, object.physics, physics, selected]);
+  
   const handleTransform = () => {
-    if (meshRef.current) {
-      const position: [number, number, number] = [
-        meshRef.current.position.x,
-        meshRef.current.position.y,
-        meshRef.current.position.z
-      ];
-      
-      const rotation: [number, number, number] = [
-        meshRef.current.rotation.x,
-        meshRef.current.rotation.y,
-        meshRef.current.rotation.z
-      ];
-      
-      const scale: [number, number, number] = [
-        meshRef.current.scale.x,
-        meshRef.current.scale.y,
-        meshRef.current.scale.z
-      ];
-      
-      onTransformChange(position, rotation, scale);
+    if (!meshRef.current) return;
+    
+    const position: [number, number, number] = [
+      meshRef.current.position.x,
+      meshRef.current.position.y,
+      meshRef.current.position.z
+    ];
+    
+    const rotation: [number, number, number] = [
+      meshRef.current.rotation.x,
+      meshRef.current.rotation.y,
+      meshRef.current.rotation.z
+    ];
+    
+    const scale: [number, number, number] = [
+      meshRef.current.scale.x,
+      meshRef.current.scale.y,
+      meshRef.current.scale.z
+    ];
+    
+    onTransformChange(position, rotation, scale);
+    
+    if (object.physics.enabled) {
+      const body = physics.bodies.get(object.id);
+      if (body) {
+        body.position.set(position[0], position[1], position[2]);
+        body.quaternion.setFromEuler(rotation[0], rotation[1], rotation[2]);
+        
+        body.wakeUp();
+      }
     }
   };
   
@@ -244,6 +296,8 @@ const ObjectInstance: React.FC<{
     );
   }
   
+  const showPhysicsWireframe = object.physics.enabled && !selected;
+  
   return (
     <>
       <mesh
@@ -261,6 +315,13 @@ const ObjectInstance: React.FC<{
         />
       </mesh>
       
+      {showPhysicsWireframe && (
+        <mesh position={object.position} rotation={object.rotation} scale={object.scale}>
+          {getPhysicsDebugGeometry(object.physics.shape, template)}
+          <meshBasicMaterial color="#00ff00" wireframe={true} transparent={true} opacity={0.5} />
+        </mesh>
+      )}
+      
       {selected && (
         <TransformControls
           object={meshRef}
@@ -273,6 +334,49 @@ const ObjectInstance: React.FC<{
   );
 };
 
+// Helper to get debug wireframe geometry for physics visualization
+const getPhysicsDebugGeometry = (shape: CollisionShape, template: ObjectTemplate | undefined) => {
+  if (!template) return <boxGeometry args={[1, 1, 1]} />;
+  
+  switch (shape) {
+    case CollisionShape.BOX:
+      return (
+        <boxGeometry args={[
+          template.props?.size || 1, 
+          template.props?.size || 1, 
+          template.props?.size || 1
+        ]} />
+      );
+    case CollisionShape.SPHERE:
+      return (
+        <sphereGeometry args={[
+          template.props?.radius || 0.5, 
+          8, 8
+        ]} />
+      );
+    case CollisionShape.CYLINDER:
+      return (
+        <cylinderGeometry args={[
+          template.props?.radiusTop || 0.5,
+          template.props?.radiusBottom || 0.5,
+          template.props?.height || 1,
+          8
+        ]} />
+      );
+    case CollisionShape.CAPSULE:
+      return (
+        <cylinderGeometry args={[
+          template.props?.radius || 0.5,
+          template.props?.radius || 0.5,
+          template.props?.height || 1,
+          8
+        ]} />
+      );
+    default:
+      return <boxGeometry args={[1, 1, 1]} />;
+  }
+};
+
 // Properties panel for selected object
 const PropertiesPanel: React.FC<{
   object: SceneObject | null;
@@ -281,9 +385,9 @@ const PropertiesPanel: React.FC<{
 }> = ({ object, onUpdate, onDelete }) => {
   if (!object) {
     return (
-      <div className="properties-panel">
+      <div className="properties-panel properties-panel-empty">
         <h3>Properties</h3>
-        <p className="no-selection">No object selected</p>
+        <p>Select an object to edit its properties</p>
       </div>
     );
   }
@@ -305,6 +409,59 @@ const PropertiesPanel: React.FC<{
         [key]: value 
       } 
     });
+  };
+  
+  const handlePhysicsChange = (updates: Partial<PhysicalProperties>) => {
+    onUpdate({
+      physics: {
+        ...object.physics,
+        ...updates
+      }
+    });
+  };
+
+  const handlePhysicsToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handlePhysicsChange({ enabled: e.target.checked });
+  };
+  
+  const handleBodyTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    handlePhysicsChange({ bodyType: e.target.value as BodyType });
+  };
+  
+  const handleMaterialChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    handlePhysicsChange({ material: e.target.value as PhysicsMaterial });
+  };
+  
+  const handleCollisionShapeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    handlePhysicsChange({ shape: e.target.value as CollisionShape });
+  };
+  
+  const handleMassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handlePhysicsChange({ mass: parseFloat(e.target.value) });
+  };
+  
+  const handleFrictionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handlePhysicsChange({ friction: parseFloat(e.target.value) });
+  };
+  
+  const handleRestitutionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handlePhysicsChange({ restitution: parseFloat(e.target.value) });
+  };
+  
+  const handleLinearDampingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handlePhysicsChange({ linearDamping: parseFloat(e.target.value) });
+  };
+  
+  const handleAngularDampingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handlePhysicsChange({ angularDamping: parseFloat(e.target.value) });
+  };
+  
+  const handleFixedRotationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handlePhysicsChange({ fixedRotation: e.target.checked });
+  };
+  
+  const handleIsTriggerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handlePhysicsChange({ isTrigger: e.target.checked });
   };
   
   return (
@@ -409,106 +566,191 @@ const PropertiesPanel: React.FC<{
         </div>
       </div>
       
-      {/* Specific properties based on object type */}
-      {template?.type === 'light' && (
-        <div className="property-group">
-          <h4>Light Properties</h4>
-          
-          <div className="property-row">
-            <label>Intensity</label>
-            <input 
-              type="range" 
-              min="0" 
-              max="5" 
-              step="0.1" 
-              value={object.properties.intensity || 1} 
-              onChange={(e) => handlePropertyChange('intensity', parseFloat(e.target.value))} 
-            />
-            <span>{(object.properties.intensity || 1).toFixed(1)}</span>
-          </div>
-          
-          {(template.id === 'pointLight' || template.id === 'spotLight') && (
+      {/* Physics properties section */}
+      <div className="property-group">
+        <h4>Physics</h4>
+        
+        <div className="property-row">
+          <label>Enable Physics</label>
+          <input 
+            type="checkbox" 
+            checked={object.physics.enabled} 
+            onChange={handlePhysicsToggle}
+          />
+        </div>
+        
+        {object.physics.enabled && (
+          <>
             <div className="property-row">
-              <label>Distance</label>
-              <input 
-                type="range" 
-                min="0" 
-                max="50" 
-                step="1" 
-                value={object.properties.distance || 10} 
-                onChange={(e) => handlePropertyChange('distance', parseFloat(e.target.value))} 
-              />
-              <span>{(object.properties.distance || 10).toFixed(0)}</span>
+              <label>Body Type</label>
+              <select 
+                value={object.physics.bodyType} 
+                onChange={handleBodyTypeChange}
+              >
+                <option value={BodyType.STATIC}>Static (Immovable)</option>
+                <option value={BodyType.DYNAMIC}>Dynamic (Fully Simulated)</option>
+                <option value={BodyType.KINEMATIC}>Kinematic (User Controlled)</option>
+                <option value={BodyType.SIMULATED}>Character (Physics Interaction)</option>
+              </select>
             </div>
-          )}
-          
-          {template.id === 'spotLight' && (
-            <>
-              <div className="property-row">
-                <label>Angle</label>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="1.57" 
-                  step="0.1" 
-                  value={object.properties.angle || 0.3} 
-                  onChange={(e) => handlePropertyChange('angle', parseFloat(e.target.value))} 
-                />
-                <span>{Math.round((object.properties.angle || 0.3) * 180 / Math.PI)}°</span>
-              </div>
-              
-              <div className="property-row">
-                <label>Penumbra</label>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="1" 
-                  step="0.1" 
-                  value={object.properties.penumbra || 0.5} 
-                  onChange={(e) => handlePropertyChange('penumbra', parseFloat(e.target.value))} 
-                />
-                <span>{(object.properties.penumbra || 0.5).toFixed(1)}</span>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+            
+            <div className="property-row">
+              <label>Collision Shape</label>
+              <select 
+                value={object.physics.shape} 
+                onChange={handleCollisionShapeChange}
+              >
+                <option value={CollisionShape.BOX}>Box</option>
+                <option value={CollisionShape.SPHERE}>Sphere</option>
+                <option value={CollisionShape.CYLINDER}>Cylinder</option>
+                <option value={CollisionShape.CAPSULE}>Capsule</option>
+                <option value={CollisionShape.CONVEX_HULL}>Convex Hull</option>
+                <option value={CollisionShape.COMPOUND}>Compound</option>
+                <option value={CollisionShape.TRIMESH}>Trimesh (Complex)</option>
+              </select>
+            </div>
+            
+            <div className="property-row">
+              <label>Material</label>
+              <select 
+                value={object.physics.material} 
+                onChange={handleMaterialChange}
+              >
+                <option value={PhysicsMaterial.DEFAULT}>Default</option>
+                <option value={PhysicsMaterial.METAL}>Metal</option>
+                <option value={PhysicsMaterial.WOOD}>Wood</option>
+                <option value={PhysicsMaterial.CONCRETE}>Concrete</option>
+                <option value={PhysicsMaterial.PLASTIC}>Plastic</option>
+                <option value={PhysicsMaterial.RUBBER}>Rubber</option>
+                <option value={PhysicsMaterial.GLASS}>Glass</option>
+                <option value={PhysicsMaterial.ICE}>Ice</option>
+                <option value={PhysicsMaterial.WATER}>Water</option>
+                <option value={PhysicsMaterial.FABRIC}>Fabric</option>
+                <option value={PhysicsMaterial.SPONGE}>Sponge</option>
+              </select>
+            </div>
+            
+            {(object.physics.bodyType === BodyType.DYNAMIC || 
+              object.physics.bodyType === BodyType.SIMULATED) && (
+              <>
+                <div className="property-row">
+                  <label>Mass</label>
+                  <input 
+                    type="number" 
+                    value={object.physics.mass} 
+                    onChange={handleMassChange}
+                    min="0.01"
+                    step="0.1"
+                  />
+                </div>
+                
+                <div className="property-row">
+                  <label>Friction</label>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.01"
+                    value={object.physics.friction} 
+                    onChange={handleFrictionChange}
+                  />
+                  <span className="range-value">{object.physics.friction?.toFixed(2)}</span>
+                </div>
+                
+                <div className="property-row">
+                  <label>Bounciness</label>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.01"
+                    value={object.physics.restitution} 
+                    onChange={handleRestitutionChange}
+                  />
+                  <span className="range-value">{object.physics.restitution?.toFixed(2)}</span>
+                </div>
+                
+                <div className="property-row">
+                  <label>Linear Damping</label>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.01"
+                    value={object.physics.linearDamping} 
+                    onChange={handleLinearDampingChange}
+                  />
+                  <span className="range-value">{object.physics.linearDamping?.toFixed(2)}</span>
+                </div>
+                
+                <div className="property-row">
+                  <label>Angular Damping</label>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.01"
+                    value={object.physics.angularDamping} 
+                    onChange={handleAngularDampingChange}
+                  />
+                  <span className="range-value">{object.physics.angularDamping?.toFixed(2)}</span>
+                </div>
+                
+                <div className="property-row">
+                  <label>Lock Rotation</label>
+                  <input 
+                    type="checkbox" 
+                    checked={object.physics.fixedRotation} 
+                    onChange={handleFixedRotationChange}
+                  />
+                </div>
+              </>
+            )}
+            
+            <div className="property-row">
+              <label>Is Trigger</label>
+              <input 
+                type="checkbox" 
+                checked={object.physics.isTrigger} 
+                onChange={handleIsTriggerChange}
+              />
+            </div>
+          </>
+        )}
+      </div>
       
-      {template?.type === 'effect' && template.id === 'particles' && (
+      {/* Specific properties based on object type */}
+      {template && template.props && Object.keys(template.props).length > 0 && (
         <div className="property-group">
-          <h4>Particle Properties</h4>
+          <h4>{template.name} Properties</h4>
           
-          <div className="property-row">
-            <label>Count</label>
-            <input 
-              type="range" 
-              min="10" 
-              max="1000" 
-              step="10" 
-              value={object.properties.count || 100} 
-              onChange={(e) => handlePropertyChange('count', parseInt(e.target.value))} 
-            />
-            <span>{object.properties.count || 100}</span>
-          </div>
-          
-          <div className="property-row">
-            <label>Size</label>
-            <input 
-              type="range" 
-              min="0.01" 
-              max="1" 
-              step="0.01" 
-              value={object.properties.size || 0.1} 
-              onChange={(e) => handlePropertyChange('size', parseFloat(e.target.value))} 
-            />
-            <span>{(object.properties.size || 0.1).toFixed(2)}</span>
-          </div>
+          {Object.entries(template.props).map(([key, defaultValue]) => (
+            <div className="property-row" key={key}>
+              <label>{key.charAt(0).toUpperCase() + key.slice(1)}</label>
+              <input 
+                type={typeof defaultValue === 'number' ? 'number' : 'text'} 
+                value={object.properties[key] !== undefined ? object.properties[key] : defaultValue} 
+                onChange={(e) => {
+                  const value = typeof defaultValue === 'number' ? parseFloat(e.target.value) : e.target.value;
+                  handlePropertyChange(key, value);
+                }}
+                step={typeof defaultValue === 'number' ? '0.1' : undefined}
+              />
+            </div>
+          ))}
         </div>
       )}
       
-      <button className="delete-btn" onClick={onDelete}>
-        Delete Object
-      </button>
+      <div className="property-actions">
+        <button className="delete-button" onClick={onDelete}>
+          <FaTrash /> Delete
+        </button>
+        <button className="clone-button" onClick={() => {
+          alert("Clone feature coming soon!");
+        }}>
+          <FaClone /> Clone
+        </button>
+      </div>
     </div>
   );
 };
@@ -521,6 +763,28 @@ const Scene: React.FC<{
   onUpdateObject: (id: string, updates: Partial<SceneObject>) => void;
 }> = ({ objects, selectedObjectId, onSelectObject, onUpdateObject }) => {
   const { gl, viewport } = useThree();
+  const physics = usePhysics({ x: 0, y: -9.82, z: 0 }, true);
+  
+  useEffect(() => {
+    let lastTime = 0;
+    
+    const updatePhysics = (time: number) => {
+      const deltaTime = (time - lastTime) / 1000;
+      lastTime = time;
+      
+      if (deltaTime > 0) {
+        physics.update(deltaTime);
+      }
+      
+      requestAnimationFrame(updatePhysics);
+    };
+    
+    const animationId = requestAnimationFrame(updatePhysics);
+    
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [physics]);
   
   const handlePlaneClick = (e: THREE.Event) => {
     e.stopPropagation();
@@ -569,6 +833,7 @@ const Scene: React.FC<{
           selected={selectedObjectId === object.id}
           onClick={() => onSelectObject(object.id)} 
           onTransformChange={(position, rotation, scale) => handleObjectTransform(object.id, position, rotation, scale)}
+          physics={physics}
         />
       ))}
       
@@ -597,14 +862,28 @@ const ObjectPlacement: React.FC = () => {
     if (!template) return;
     
     const newObject: SceneObject = {
-      id: `obj_${Date.now()}`,
+      id: nanoid(),
       templateId,
       position,
       rotation: [0, 0, 0],
       scale: [1, 1, 1],
       name: `${template.name} ${objects.length + 1}`,
       properties: template.props || {},
+      physics: { ...DEFAULT_PHYSICAL_PROPERTIES }
     };
+    
+    // Set appropriate physics shape based on template
+    switch (templateId) {
+      case 'sphere':
+        newObject.physics.shape = CollisionShape.SPHERE;
+        break;
+      case 'cylinder':
+      case 'cone':
+        newObject.physics.shape = CollisionShape.CYLINDER;
+        break;
+      default:
+        newObject.physics.shape = CollisionShape.BOX;
+    }
     
     setObjects([...objects, newObject]);
     setSelectedObjectId(newObject.id);

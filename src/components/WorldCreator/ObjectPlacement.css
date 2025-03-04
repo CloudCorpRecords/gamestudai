@@ -1,85 +1,59 @@
 .object-placement {
   display: flex;
+  width: 100%;
   height: 100%;
+  overflow: hidden;
+}
+
+.template-selector {
+  width: 220px;
   background-color: #2a2a2a;
-  color: #e0e0e0;
-}
-
-.object-templates {
-  width: 250px;
-  padding: 15px;
-  background-color: #333;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+  padding: 1rem;
   overflow-y: auto;
-}
-
-.object-templates h2 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  color: #fff;
-  font-size: 1.5rem;
-  border-bottom: 1px solid #555;
-  padding-bottom: 8px;
-}
-
-.template-categories {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.template-category h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1.1rem;
-  color: #aaa;
+  border-right: 1px solid #444;
 }
 
 .template-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.object-template {
-  background-color: #444;
-  border-radius: 4px;
-  padding: 10px 5px;
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.template-item {
+  display: flex;
   align-items: center;
-  cursor: grab;
-  transition: all 0.2s;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background-color: #333;
+  cursor: pointer;
   user-select: none;
+  transition: background-color 0.2s;
 }
 
-.object-template:hover {
-  background-color: #555;
-  transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-}
-
-.object-template:active {
-  cursor: grabbing;
+.template-item:hover {
+  background-color: #444;
 }
 
 .template-icon {
-  font-size: 1.4rem;
-  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: #aaa;
 }
 
-.object-template span {
-  font-size: 12px;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
+.template-name {
+  font-size: 0.9rem;
+  color: #ddd;
 }
 
 .object-canvas {
   flex: 1;
   position: relative;
+  background-color: #1a1a1a;
 }
 
 .drag-helper {
@@ -88,74 +62,68 @@
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 10px 15px;
-  border-radius: 5px;
+  color: #fff;
+  padding: 1rem;
+  border-radius: 4px;
   pointer-events: none;
-  z-index: 100;
 }
 
 .properties-panel {
-  width: 280px;
-  padding: 15px;
-  background-color: #333;
-  box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+  width: 300px;
+  background-color: #2a2a2a;
+  padding: 1rem;
   overflow-y: auto;
+  border-left: 1px solid #444;
 }
 
-.properties-panel h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  color: #fff;
-  font-size: 1.2rem;
-  border-bottom: 1px solid #555;
-  padding-bottom: 8px;
-}
-
-.no-selection {
+.properties-panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   color: #888;
-  font-style: italic;
-  text-align: center;
-  margin: 30px 0;
 }
 
 .property-group {
-  margin-bottom: 20px;
-  padding-bottom: 15px;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid #444;
 }
 
 .property-group h4 {
   margin-top: 0;
-  margin-bottom: 12px;
+  margin-bottom: 1rem;
   font-size: 1rem;
   color: #aaa;
 }
 
 .property-row {
-  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.8rem;
 }
 
 .property-row label {
-  display: block;
-  font-size: 13px;
-  margin-bottom: 5px;
+  font-size: 0.85rem;
+  color: #ccc;
+  margin-bottom: 0.3rem;
 }
 
 .property-row input[type="text"],
-.property-row input[type="number"] {
-  width: 100%;
-  padding: 6px 8px;
-  background-color: #444;
+.property-row input[type="number"],
+.property-row select {
+  background-color: #333;
   border: 1px solid #555;
-  border-radius: 3px;
-  color: #e0e0e0;
-  font-size: 13px;
+  border-radius: 4px;
+  padding: 0.4rem;
+  color: #eee;
+  font-size: 0.9rem;
 }
 
-.property-row input[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
+.property-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-left: 0;
 }
 
 .property-row input[type="color"] {
@@ -163,81 +131,182 @@
   height: 30px;
   padding: 0;
   border: none;
-  cursor: pointer;
+  border-radius: 4px;
+  background: none;
 }
 
 .property-row input[type="range"] {
-  width: calc(100% - 40px);
+  width: 100%;
+  background-color: #333;
+  -webkit-appearance: none;
   height: 6px;
-  background-color: #444;
-  outline: none;
   border-radius: 3px;
-  vertical-align: middle;
+  margin-top: 0.5rem;
 }
 
 .property-row input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #4CAF50;
+  background-color: #4285f4;
   cursor: pointer;
-}
-
-.property-row span {
-  display: inline-block;
-  width: 35px;
-  text-align: right;
-  margin-left: 5px;
-  vertical-align: middle;
-  font-size: 13px;
 }
 
 .vector-inputs {
   display: flex;
-  gap: 5px;
+  gap: 0.5rem;
 }
 
 .vector-inputs input {
   flex: 1;
-  font-size: 12px;
-  text-align: center;
 }
 
-.delete-btn {
-  width: 100%;
-  padding: 8px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 15px;
-  font-weight: bold;
-  transition: background-color 0.2s;
+.range-value {
+  display: inline-block;
+  width: 40px;
+  text-align: right;
+  color: #ccc;
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
 }
 
-.delete-btn:hover {
-  background-color: #d32f2f;
-}
-
-.ai-generate-object {
-  width: 100%;
-  background-color: #7e57c2;
-  color: white;
-  border: none;
-  padding: 12px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
+.property-actions {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 13px;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
-.ai-generate-object:hover {
-  background-color: #673ab7;
+.delete-button, 
+.clone-button {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.delete-button {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #b71c1c;
+}
+
+.clone-button {
+  background-color: #2196f3;
+  color: white;
+}
+
+.clone-button:hover {
+  background-color: #1976d2;
+}
+
+/* Physics specific styles */
+.physics-active {
+  border: 2px solid #8bc34a;
+}
+
+.physics-property-row {
+  background-color: rgba(139, 195, 74, 0.1);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.physics-info {
+  color: #8bc34a;
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+  font-style: italic;
+}
+
+.body-type-static {
+  color: #ff9800;
+}
+
+.body-type-dynamic {
+  color: #2196f3;
+}
+
+.body-type-kinematic {
+  color: #e91e63;
+}
+
+.body-type-simulated {
+  color: #8bc34a;
+}
+
+.physics-material-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 3px;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  background-color: #333;
+}
+
+.material-default { background-color: #555; }
+.material-metal { background-color: #607d8b; }
+.material-wood { background-color: #795548; }
+.material-concrete { background-color: #9e9e9e; }
+.material-plastic { background-color: #ff9800; }
+.material-rubber { background-color: #000000; }
+.material-glass { background-color: #2196f3; opacity: 0.7; }
+.material-ice { background-color: #b3e5fc; }
+.material-water { background-color: #03a9f4; }
+.material-fabric { background-color: #9c27b0; }
+.material-sponge { background-color: #ffeb3b; }
+
+/* Collision shape visualization */
+.physics-shape-preview {
+  height: 80px;
+  background-color: #333;
+  border-radius: 4px;
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Physics debug visualization */
+.debug-wireframe {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Advanced physics properties section */
+.advanced-physics-toggle {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+}
+
+.advanced-physics-toggle:hover {
+  color: #fff;
+}
+
+.advanced-physics-toggle svg {
+  margin-right: 0.5rem;
+  transition: transform 0.2s;
+}
+
+.advanced-physics-toggle.expanded svg {
+  transform: rotate(90deg);
 } 

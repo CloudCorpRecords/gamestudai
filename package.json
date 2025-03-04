@@ -13,6 +13,7 @@
     "@react-three/cannon": "^6.6.0",
     "@react-three/drei": "^9.97.5",
     "@react-three/fiber": "^8.15.17",
+    "cannon-es": "^0.20.0",
     "file-saver": "^2.0.5",
     "leva": "^0.9.35",
     "nanoid": "^5.0.4",
