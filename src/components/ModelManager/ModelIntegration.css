@@ -1,0 +1,198 @@
+.model-integration {
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  width: 100%;
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.integration-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+
+.integration-tabs .tab {
+  flex: 1;
+  padding: 12px 15px;
+  text-align: center;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.integration-tabs .tab:hover {
+  background-color: #f0f0f0;
+}
+
+.integration-tabs .tab.active {
+  background-color: #fff;
+  color: #1890ff;
+  border-bottom: 2px solid #1890ff;
+  font-weight: 600;
+}
+
+.integration-content {
+  padding: 20px;
+}
+
+.transform-section,
+.behaviors-section {
+  margin-bottom: 24px;
+}
+
+.transform-section h3,
+.behaviors-section h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: #333;
+  font-weight: 500;
+}
+
+.transform-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.transform-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.transform-group > label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 400;
+}
+
+.vector-inputs {
+  display: flex;
+  gap: 12px;
+}
+
+.vector-input {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vector-input label {
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+}
+
+.vector-input input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.vector-input input:focus {
+  outline: none;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.behaviors-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.behavior-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.behavior-item:hover {
+  background-color: #f9f9f9;
+}
+
+.behavior-item.active {
+  background-color: rgba(24, 144, 255, 0.05);
+  border-color: rgba(24, 144, 255, 0.3);
+}
+
+.behavior-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.behavior-name {
+  font-size: 14px;
+  color: #333;
+}
+
+.integration-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.add-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.world-button {
+  background-color: #1890ff;
+  color: white;
+}
+
+.world-button:hover {
+  background-color: #0c7fea;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+}
+
+.script-button {
+  background-color: #673ab7;
+  color: white;
+}
+
+.script-button:hover {
+  background-color: #5e35b1;
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .behaviors-list {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+  
+  .vector-inputs {
+    flex-direction: column;
+    gap: 8px;
+  }
+} 

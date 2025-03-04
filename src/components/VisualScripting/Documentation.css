@@ -1,0 +1,310 @@
+.documentation-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 80%;
+  max-width: 1000px;
+  background-color: white;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.documentation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: #f0f4f8;
+  border-bottom: 1px solid #e1e4e8;
+}
+
+.documentation-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #ff4d4f;
+}
+
+.documentation-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.documentation-sidebar {
+  width: 220px;
+  background-color: #f9f9f9;
+  border-right: 1px solid #e1e4e8;
+  overflow-y: auto;
+}
+
+.sidebar-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  transition: all 0.2s;
+}
+
+.sidebar-item:hover {
+  background-color: #f0f4f8;
+}
+
+.sidebar-item.active {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border-right: 3px solid #1890ff;
+}
+
+.documentation-page {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.page-content {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.page-content h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.page-content p {
+  margin-bottom: 16px;
+  line-height: 1.6;
+  color: #555;
+}
+
+.documentation-section {
+  margin-bottom: 32px;
+}
+
+.documentation-section h4 {
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.documentation-section p {
+  margin-bottom: 12px;
+}
+
+.documentation-section ul, 
+.documentation-section ol {
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+
+.documentation-section li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.documentation-tips {
+  background-color: #fffbe6;
+  border: 1px solid #fff1b8;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.documentation-tips h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #614700;
+}
+
+.documentation-tips ul {
+  margin-bottom: 0;
+}
+
+.doc-image-placeholder {
+  background-color: #f5f5f5;
+  border: 1px dashed #d9d9d9;
+  border-radius: 4px;
+  padding: 16px;
+  margin: 12px 0;
+  text-align: center;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Node category styling */
+.node-category {
+  margin-bottom: 24px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.node-category-header {
+  padding: 12px 16px;
+}
+
+.node-category-header h4 {
+  margin: 0;
+  color: #333;
+}
+
+.event-color {
+  background-color: #e6f7ff;
+  border-bottom: 1px solid #bae7ff;
+}
+
+.action-color {
+  background-color: #f6ffed;
+  border-bottom: 1px solid #d9f7be;
+}
+
+.condition-color {
+  background-color: #fff7e6;
+  border-bottom: 1px solid #ffd591;
+}
+
+.math-color {
+  background-color: #f0f5ff;
+  border-bottom: 1px solid #d6e4ff;
+}
+
+.ai-color {
+  background-color: #f9f0ff;
+  border-bottom: 1px solid #efdbff;
+}
+
+.node-category p {
+  padding: 12px 16px;
+  margin: 0;
+}
+
+.node-examples {
+  padding: 0 16px 16px;
+}
+
+.node-example {
+  padding: 8px;
+  margin-bottom: 4px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+/* Port type styling */
+.port-type-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.port-type {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.port-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.trigger {
+  background-color: #ff0072;
+}
+
+.boolean {
+  background-color: #00ff9f;
+}
+
+.number {
+  background-color: #00c4ff;
+}
+
+.string {
+  background-color: #ffff00;
+}
+
+.vector {
+  background-color: #ff9500;
+}
+
+.color {
+  background-color: #ff00ff;
+}
+
+.object {
+  background-color: #0051ff;
+}
+
+.port-info {
+  flex: 1;
+}
+
+/* Property type styling */
+.property-type {
+  margin-bottom: 20px;
+}
+
+.property-type h5 {
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .documentation-panel {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .documentation-content {
+    flex-direction: column;
+  }
+  
+  .documentation-sidebar {
+    width: 100%;
+    max-height: 200px;
+    border-right: none;
+    border-bottom: 1px solid #e1e4e8;
+  }
+  
+  .sidebar-item {
+    padding: 10px 16px;
+  }
+  
+  .sidebar-item.active {
+    border-right: none;
+    border-bottom: 3px solid #1890ff;
+  }
+} 

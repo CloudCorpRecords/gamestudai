@@ -1,0 +1,345 @@
+.script-node {
+  width: 240px;
+  background-color: white;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.script-node.selected {
+  box-shadow: 0 0 0 2px #1890ff, 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.script-node.collapsed {
+  height: auto;
+}
+
+.node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.event-node .node-header {
+  background-color: #e6f7ff;
+  border-bottom: 1px solid #bae7ff;
+}
+
+.action-node .node-header {
+  background-color: #f6ffed;
+  border-bottom: 1px solid #d9f7be;
+}
+
+.condition-node .node-header {
+  background-color: #fff7e6;
+  border-bottom: 1px solid #ffd591;
+}
+
+.ai-node .node-header {
+  background-color: #f9f0ff;
+  border-bottom: 1px solid #efdbff;
+}
+
+.math-node .node-header {
+  background-color: #f0f5ff;
+  border-bottom: 1px solid #d6e4ff;
+}
+
+.node-title {
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #333;
+}
+
+.advanced-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background-color: #f9f0ff;
+  color: #722ed1;
+  border-radius: 4px;
+  font-weight: normal;
+  border: 1px solid #d3adf7;
+}
+
+.node-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.node-controls button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.node-controls button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.advanced-toggle.active {
+  color: #722ed1;
+}
+
+.node-description {
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #666;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eee;
+}
+
+.node-content {
+  padding: 8px 0;
+}
+
+.port {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  position: relative;
+  height: 28px;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.port:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.input-port {
+  justify-content: flex-start;
+  padding-left: 20px;
+}
+
+.output-port {
+  justify-content: flex-end;
+  padding-right: 20px;
+}
+
+.port span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.required-badge {
+  color: #ff4d4f;
+  margin-left: 4px;
+  font-weight: bold;
+}
+
+.node-properties {
+  padding: 8px 12px;
+  border-top: 1px solid #eee;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.property-row {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.property-row:last-child {
+  margin-bottom: 0;
+}
+
+.property-row label {
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: #666;
+  display: flex;
+  justify-content: space-between;
+}
+
+.property-row input,
+.property-row select,
+.property-row textarea {
+  padding: 6px 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 12px;
+  background-color: #fff;
+  transition: all 0.2s;
+}
+
+.property-row input:focus,
+.property-row select:focus,
+.property-row textarea:focus {
+  outline: none;
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* Checkbox styles */
+.property-row input[type="checkbox"] {
+  margin-left: auto;
+  margin-right: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* Specialized property rows */
+.slider-row,
+.color-row,
+.vector3-row,
+.text-area-row {
+  margin-bottom: 12px;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-container input[type="range"] {
+  flex: 1;
+  margin: 0;
+  height: 6px;
+}
+
+.slider-value {
+  width: 40px;
+  text-align: right;
+  padding: 2px 4px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.color-picker-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-text {
+  flex: 1;
+}
+
+.vector3-inputs {
+  display: flex;
+  gap: 4px;
+}
+
+.vector-component {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.vector-component label {
+  text-align: center;
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+.advanced-property {
+  border-color: #d3adf7;
+}
+
+.node-tags {
+  padding: 4px 12px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  color: #666;
+}
+
+/* Port styling by type */
+.port .react-flow__handle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+/* Port colors */
+.port .react-flow__handle[data-type="trigger"] {
+  background-color: #ff0072;
+}
+
+.port .react-flow__handle[data-type="boolean"] {
+  background-color: #00ff9f;
+}
+
+.port .react-flow__handle[data-type="number"],
+.port .react-flow__handle[data-type="integer"] {
+  background-color: #00c4ff;
+}
+
+.port .react-flow__handle[data-type="string"] {
+  background-color: #ffff00;
+}
+
+.port .react-flow__handle[data-type="vector2"],
+.port .react-flow__handle[data-type="vector3"] {
+  background-color: #ff9500;
+}
+
+.port .react-flow__handle[data-type="color"] {
+  background-color: #ff00ff;
+}
+
+.port .react-flow__handle[data-type="object"] {
+  background-color: #0051ff;
+}
+
+.port .react-flow__handle[data-type="array"] {
+  background-color: #00ff51;
+}
+
+.port .react-flow__handle[data-type="any"] {
+  background-color: #bbbbbb;
+}
+
+/* Handle positioning */
+.react-flow__handle-left {
+  left: -5px;
+}
+
+.react-flow__handle-right {
+  right: -5px;
+}
+
+/* Tooltips */
+.node-tooltip {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  z-index: 1000;
+  pointer-events: none;
+  max-width: 200px;
+  white-space: normal;
+  line-height: 1.4;
+} 

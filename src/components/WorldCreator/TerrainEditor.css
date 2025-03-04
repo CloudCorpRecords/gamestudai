@@ -1,0 +1,266 @@
+.terrain-editor {
+  display: flex;
+  height: 100%;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
+.terrain-controls {
+  width: 300px;
+  padding: 20px;
+  background-color: #333;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+  overflow-y: auto;
+}
+
+.terrain-controls h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #fff;
+  font-size: 1.5rem;
+  border-bottom: 1px solid #555;
+  padding-bottom: 10px;
+}
+
+.control-group {
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #444;
+}
+
+.control-group h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  color: #aaa;
+}
+
+.control-group label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.control-group input[type="range"] {
+  margin: 10px 0;
+  width: 100%;
+  background-color: #444;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+}
+
+.control-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.control-group .value {
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.control-group select {
+  background-color: #444;
+  color: #e0e0e0;
+  border: none;
+  padding: 8px;
+  width: 100%;
+  border-radius: 4px;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.generate-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.generate-btn:hover {
+  background-color: #3e8e41;
+}
+
+.ai-generate-btn {
+  background-color: #7e57c2;
+  color: white;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ai-generate-btn:hover {
+  background-color: #673ab7;
+}
+
+.material-selector {
+  margin-bottom: 25px;
+}
+
+.material-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.material-option {
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.material-option span {
+  color: rgba(0, 0, 0, 0.7);
+  font-weight: bold;
+  text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.material-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.material-option.selected {
+  border: 2px solid #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.terrain-viewport {
+  flex: 1;
+  position: relative;
+}
+
+.ai-prompt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.ai-prompt-dialog {
+  background-color: #333;
+  padding: 25px;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.ai-prompt-dialog h3 {
+  margin-top: 0;
+  color: #7e57c2;
+  margin-bottom: 10px;
+}
+
+.ai-prompt-dialog p {
+  margin-bottom: 15px;
+  color: #ccc;
+}
+
+.ai-prompt-dialog textarea {
+  width: 100%;
+  height: 100px;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #444;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  font-family: inherit;
+  resize: none;
+  margin-bottom: 15px;
+}
+
+.ai-prompt-dialog textarea:focus {
+  outline: none;
+  border-color: #7e57c2;
+}
+
+.ai-prompt-suggestions {
+  margin-bottom: 20px;
+}
+
+.ai-prompt-suggestions p {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.ai-prompt-suggestions button {
+  background-color: #555;
+  color: #e0e0e0;
+  border: none;
+  padding: 6px 10px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.2s;
+}
+
+.ai-prompt-suggestions button:hover {
+  background-color: #666;
+}
+
+.ai-prompt-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.ai-prompt-actions button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+}
+
+.ai-prompt-actions button:first-child {
+  background-color: #555;
+  color: #e0e0e0;
+}
+
+.ai-prompt-actions button:first-child:hover {
+  background-color: #666;
+}
+
+.ai-prompt-actions .generate-btn {
+  margin-top: 0;
+}
+
+.ai-prompt-actions .generate-btn:disabled {
+  background-color: #6b9a6e;
+  opacity: 0.6;
+  cursor: not-allowed;
+} 

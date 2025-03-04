@@ -1,0 +1,304 @@
+.world-creator {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.world-creator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #333;
+  border-bottom: 1px solid #444;
+}
+
+.world-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.world-info h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.ai-badge {
+  display: inline-block;
+  padding: 3px 6px;
+  background-color: #7e57c2;
+  color: white;
+  font-size: 11px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.last-modified {
+  margin-left: 10px;
+  font-size: 12px;
+  color: #999;
+}
+
+.world-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.new-world-btn, .save-world-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.new-world-btn {
+  background-color: #444;
+  color: #e0e0e0;
+}
+
+.new-world-btn:hover {
+  background-color: #555;
+}
+
+.save-world-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.save-world-btn:hover {
+  background-color: #3e8e41;
+}
+
+.world-creator-tabs {
+  display: flex;
+  padding: 0 15px;
+  background-color: #252525;
+  border-bottom: 1px solid #444;
+}
+
+.world-creator-tabs .tab {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.world-creator-tabs .tab:hover {
+  color: #e0e0e0;
+}
+
+.world-creator-tabs .tab.active {
+  color: #4CAF50;
+}
+
+.world-creator-tabs .tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: #4CAF50;
+}
+
+.world-creator-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.environment-placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+  background-color: #2a2a2a;
+}
+
+.environment-placeholder h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.environment-placeholder p {
+  margin: 5px 0;
+  color: #aaa;
+  max-width: 600px;
+}
+
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.create-world-dialog {
+  background-color: #333;
+  border-radius: 8px;
+  padding: 20px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.create-world-dialog h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #fff;
+  font-size: 1.3rem;
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+}
+
+.dialog-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #252525;
+}
+
+.dialog-tabs button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background-color: transparent;
+  color: #aaa;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dialog-tabs button:hover {
+  background-color: #3a3a3a;
+  color: #e0e0e0;
+}
+
+.dialog-tabs button.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #ccc;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background-color: #444;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  height: 120px;
+  resize: none;
+}
+
+.ai-prompt-suggestions {
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+.ai-prompt-suggestions h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #ccc;
+  font-size: 14px;
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.suggestions button {
+  background-color: #464646;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.suggestions button:hover {
+  background-color: #555;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dialog-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dialog-actions button:first-child {
+  background-color: #444;
+  color: #e0e0e0;
+}
+
+.dialog-actions button:first-child:hover {
+  background-color: #555;
+}
+
+.dialog-actions .create-btn,
+.dialog-actions .generate-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.dialog-actions .create-btn:hover:not(:disabled),
+.dialog-actions .generate-btn:hover:not(:disabled) {
+  background-color: #3e8e41;
+}
+
+.dialog-actions .create-btn:disabled,
+.dialog-actions .generate-btn:disabled {
+  background-color: #67a369;
+  opacity: 0.6;
+  cursor: not-allowed;
+} 

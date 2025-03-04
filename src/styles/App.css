@@ -1,0 +1,347 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #333;
+  height: 50px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-right: 2rem;
+  color: #61dafb;
+}
+
+.project-name {
+  flex-grow: 0;
+  font-size: 1rem;
+  margin-right: 2rem;
+}
+
+.project-name input {
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: #fff;
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  width: 200px;
+}
+
+.project-name input:hover,
+.project-name input:focus {
+  background-color: #333;
+  border-color: #444;
+  outline: none;
+}
+
+.header-tabs {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  align-items: stretch;
+}
+
+.header-tabs .tab {
+  padding: 0 1.5rem;
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.9rem;
+  position: relative;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+}
+
+.header-tabs .tab:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header-tabs .tab.active {
+  color: #61dafb;
+  border-bottom-color: #61dafb;
+}
+
+.top-menu {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.top-menu button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.top-menu button:hover {
+  background-color: #333;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #252525;
+  min-width: 160px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  border-radius: 4px;
+  overflow: hidden;
+  right: 0;
+}
+
+.dropdown-content button {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: #ddd;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dropdown-content button:hover {
+  background-color: #333;
+  color: white;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.ai-button {
+  background-color: #7957d5 !important;
+  color: white !important;
+  border-radius: 4px !important;
+  padding: 0.25rem 0.75rem !important;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.ai-button:hover, 
+.ai-button.active {
+  background-color: #8a6add !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.content-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.ai-assistant-panel {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 350px;
+  background-color: #252525;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  padding: 1rem;
+  color: #e0e0e0;
+}
+
+.ai-assistant-panel h3 {
+  margin-top: 0;
+  color: #61dafb;
+  display: flex;
+  align-items: center;
+}
+
+.ai-assistant-panel h3::before {
+  content: '🤖';
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+.ai-prompt-container {
+  display: flex;
+  margin: 1rem 0;
+}
+
+.ai-prompt-container input {
+  flex: 1;
+  padding: 0.5rem;
+  background-color: #333;
+  border: 1px solid #444;
+  border-radius: 4px 0 0 4px;
+  color: #fff;
+}
+
+.ai-prompt-container input:focus {
+  outline: none;
+  border-color: #61dafb;
+}
+
+.ai-prompt-button {
+  padding: 0.5rem 1rem;
+  background-color: #7957d5;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
+.ai-prompt-button:hover:not(:disabled) {
+  background-color: #8a6add;
+}
+
+.ai-prompt-button:disabled {
+  background-color: #444;
+  cursor: not-allowed;
+}
+
+.ai-suggestions {
+  margin-top: 1rem;
+}
+
+.ai-suggestions p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.ai-suggestions button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background-color: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #ddd;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.ai-suggestions button:hover {
+  background-color: #3a3a3a;
+  border-color: #61dafb;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #1e1e1e;
+  border-right: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.right-sidebar {
+  border-right: none;
+  border-left: 1px solid #333;
+}
+
+.sidebar h3 {
+  padding: 0.75rem 1rem;
+  margin: 0;
+  font-size: 1rem;
+  background-color: #252525;
+  border-bottom: 1px solid #333;
+}
+
+.asset-list, .properties-panel {
+  padding: 0.5rem;
+}
+
+.asset-item {
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.asset-item:hover {
+  background-color: #2a2a2a;
+}
+
+.property-group {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background-color: #252525;
+  border-radius: 4px;
+}
+
+.property-group h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.property-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.property-row label {
+  flex: 1;
+  font-size: 0.8rem;
+}
+
+.property-row input {
+  width: 60px;
+  background-color: #333;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 0.25rem;
+  border-radius: 2px;
+}
+
+.app-footer {
+  height: 30px;
+  background-color: #1a1a1a;
+  border-top: 1px solid #333;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  font-size: 0.8rem;
+}
+
+.status-bar {
+  flex: 1;
+}
+
+.version {
+  color: #888;
+} 
