@@ -1,7 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const axios = require('axios');
-const dotenv = require('dotenv');
+import express from 'express';
+import cors from 'cors';
+import axios from 'axios';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Get current file path
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Load environment variables
 dotenv.config();
