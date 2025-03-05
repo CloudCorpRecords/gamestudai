@@ -47,7 +47,8 @@ if (fs.existsSync(envPath)) {
   
   // Check if API token is already set
   if (envContent.includes('REPLICATE_API_TOKEN=') && 
-      !envContent.includes('REPLICATE_API_TOKEN=your_replicate_api_token_here')) {
+      !envContent.includes('REPLICATE_API_TOKEN=REPLACE_WITH_YOUR_API_TOKEN') &&
+      !envContent.match(/REPLICATE_API_TOKEN=\s*$/)) {
     console.log('API token already set in .env file');
     startServer();
   } else {
