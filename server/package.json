@@ -8,7 +8,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "start:with-token": "node start-server.js",
-    "direct": "node direct-run.js"
+    "direct": "node direct-run.js",
+    "direct:local": "node direct-run-local.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
