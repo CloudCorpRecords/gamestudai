@@ -7,7 +7,11 @@
     "setup": "npm install --legacy-peer-deps && npm run dev",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "react-scripts start",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "start:all": "node start.js"
   },
   "dependencies": {
     "@react-three/cannon": "^6.6.0",
@@ -15,6 +19,9 @@
     "@react-three/fiber": "^8.15.17",
     "axios": "^1.8.1",
     "cannon-es": "^0.20.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "file-saver": "^2.0.5",
     "leva": "^0.9.35",
     "nanoid": "^5.0.4",

@@ -1,18 +1,19 @@
 {
   "name": "gamestudai-server",
   "version": "1.0.0",
-  "description": "Backend server for GameStudAI",
+  "description": "Backend server for GameStudAI application",
   "main": "server.js",
-  "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js",
-    "start:all": "node start.js"
+    "dev": "nodemon server.js"
   },
   "dependencies": {
-    "axios": "^1.6.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.18.3"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "replicate": "^0.25.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 } 

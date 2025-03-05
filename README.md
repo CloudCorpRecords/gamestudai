@@ -1,217 +1,85 @@
-# GameStuAI Engine
+# GameStudAI
 
-GameStuAI Engine is an open-source AI-assisted 3D game engine that makes game development accessible to everyone. With a focus on no-code development, creators can build engaging games without writing a single line of code.
+GameStudAI is a comprehensive tool for game developers that integrates AI-powered features to streamline the game development process. This application includes an AI 3D model generator that can create 3D models from images using the Trellis AI model.
 
-## ✨ Features
+## Features
 
-- **No-Code Development**: Build games without writing code
-- **3D Scene Editor**: Create immersive worlds visually
-- **Visual Scripting System**: Create game logic with connected nodes
-- **Asset Management**: Import and organize 3D models, textures, and sounds
-- **AI-Powered Creation**: Generate assets, terrain, and game logic with AI
-- **Cross-Platform**: Export your games to web, desktop, and mobile
-- **Physics Engine**: Realistic physics simulation using cannon.js with Unreal Engine-like physics properties
-- **3D Character Model Manager**: Upload, preview, and integrate 3D character models
+- **AI 3D Model Generator**: Generate 3D models from images using the Trellis AI model
+- **Settings Management**: Securely store and manage API keys
+- **Backend Server**: Handles API requests to Replicate securely
 
-## 🚀 AI-Assisted Features
+## Prerequisites
 
-With GameStuAI Engine, you can use AI to:
+- Node.js (v16 or higher)
+- npm or yarn
+- Replicate API key (get one at [https://replicate.com](https://replicate.com))
 
-1. **Generate 3D Models**: Create characters, objects, and environments
-2. **Design Game Logic**: Describe the behavior you want, and AI will create the visual scripts
-3. **Create Terrain**: Generate detailed landscapes from text descriptions
-4. **Write Dialogue**: Create compelling character conversations
-5. **Optimize Performance**: Let AI suggest optimizations for your game
+## Setup Instructions
 
-## 🌎 World Creation
-
-The World Creator in GameStuAI Engine includes:
-
-1. **Terrain Editor**:
-   - Sculpt terrain with intuitive brushes
-   - Apply different textures (grass, rock, sand, etc.)
-   - Generate terrain from heightmaps or AI descriptions
-   - Add water, trees, and foliage
-
-2. **Object Placement**:
-   - Drag and drop objects into your scene
-   - Precise positioning with transform controls
-   - Advanced Unreal Engine-like physics properties for each object
-   - Group objects for easier management
-
-3. **Environment Controls**:
-   - Dynamic sky with time of day controls
-   - Weather effects (rain, snow, fog)
-   - Ambient lighting and atmospheric effects
-   - Post-processing effects for visual enhancements
-
-## 🧠 Visual Scripting
-
-Create game logic visually with our node-based scripting system:
-
-1. **Node Types**:
-   - Event nodes (collisions, triggers, input)
-   - Action nodes (movement, animations, sounds)
-   - Logic nodes (conditions, loops, variables)
-   - Math nodes (calculations, vectors, transformations)
-   - Physics nodes (forces, constraints, raycasts)
-   - Character Model Nodes (load, animate, control characters)
-
-2. **Easy Connections**:
-   - Connect nodes with visual wires
-   - Color-coded connections for different data types
-   - Auto-suggestion for compatible connections
-   - Error checking and validation
-
-3. **Custom Behaviors**:
-   - Create reusable behavior scripts
-   - Share scripts with the community
-   - Nest scripts for complex functionality
-   - AI suggestions for optimizing behaviors
-
-## 💾 Getting Started
+### Frontend Setup
 
 1. Clone the repository:
-   ```bash
+   ```
    git clone https://github.com/CloudCorpRecords/gamestudai.git
    cd gamestudai
    ```
 
 2. Install dependencies:
-   ```bash
+   ```
    npm install
    ```
 
 3. Start the development server:
-   ```bash
+   ```
+   npm start
+   ```
+
+### Backend Setup
+
+1. Navigate to the server directory:
+   ```
+   cd server
+   ```
+
+2. Install server dependencies:
+   ```
+   npm install
+   ```
+
+3. Create a `.env` file in the server directory with the following content:
+   ```
+   PORT=3001
+   REPLICATE_API_TOKEN=your_replicate_api_token_here
+   ```
+   Replace `your_replicate_api_token_here` with your actual Replicate API token.
+
+4. Start the backend server:
+   ```
    npm run dev
    ```
 
-4. Open your browser and navigate to:
-   ```
-   http://localhost:3000
-   ```
+## Using the AI 3D Model Generator
 
-## 🎮 Using GameStuAI Engine
+1. Ensure both frontend and backend servers are running
+2. Navigate to the AI Model Generator tab in the application
+3. Upload an image (clear subject with simple background works best)
+4. Configure the generation parameters
+5. Click "Generate 3D Model"
+6. Wait for the generation to complete (typically takes 3-5 minutes)
+7. Download or view the generated 3D model and preview videos
 
-### World Builder
+## Technical Details
 
-1. **Terrain Editor**: Create landscapes with various terrain types and features.
-2. **Object Placement**: Add objects to your world with precise control.
-   - Control advanced physics properties like friction, bounciness, mass, and simulation type
-   - Choose from various physics materials (metal, wood, rubber, ice, etc.)
-   - Select different collision shapes for accurate physical behavior
-3. **Environment Settings**: Adjust lighting, sky, and weather effects.
+- Frontend: React with TypeScript
+- Backend: Node.js with Express
+- 3D Model Generation: Trellis AI model via Replicate API
 
-### Character Model Manager
+## Troubleshooting
 
-Access the Character Model Manager from the sidebar to:
+- If you encounter CORS issues, ensure both frontend and backend servers are running
+- Check that your Replicate API token is correctly set in the server's `.env` file
+- For model generation issues, check the browser console for detailed error messages
 
-1. **Upload Models**: 
-   - Support for GLB, GLTF, FBX, and OBJ formats
-   - Add metadata and tags for organization
+## License
 
-2. **Manage Model Library**:
-   - Browse your collection of models
-   - Search and filter by tags
-   - Preview in real-time 3D viewer
-
-3. **Add to Game World**:
-   - Drag and drop models into your game scene
-   - Configure position, rotation, and scale
-   - Apply physics behaviors (walkable, interactive, physics-driven)
-
-4. **Use in Visual Scripts**:
-   - Connect character models to behaviors
-   - Control animations and movement
-   - Integrate with game events
-
-### Physics System
-
-Our physics system is inspired by Unreal Engine, providing:
-
-1. **Material Properties**:
-   - Predefined materials like metal, wood, rubber, concrete
-   - Control friction, bounciness, and density
-   - Custom material properties for unique behaviors
-
-2. **Collision Shapes**:
-   - Box, sphere, cylinder, capsule shapes
-   - Convex hull for complex shapes
-   - Compound shapes for multi-part objects
-
-3. **Body Types**:
-   - Static (immovable objects)
-   - Dynamic (fully simulated physics)
-   - Kinematic (user-controlled with physics response)
-   - Simulated (character controllers with physics)
-
-4. **Constraints**:
-   - Hinges, point-to-point connections
-   - Distance constraints
-   - Springs and damping
-
-5. **Debug Visualization**:
-   - Real-time wireframe display of collision shapes
-   - Physics properties displayed in the inspector
-
-### Visual Scripting
-
-In the Visual Scripting editor, you can:
-
-1. **Character Model Nodes**:
-   - **Load Model**: Loads a character model by ID
-   - **Animate Model**: Plays animations on a character
-   - **Move Character**: Moves a character to a target position
-   - **Character Action**: Triggers predefined actions like idle, walk, run
-
-2. **Creating Character Behaviors**:
-   - Connect character model nodes with event nodes to trigger animations
-   - Use logic nodes to create conditional behaviors
-   - Build complex character AI with combinations of nodes
-
-## 🧩 Architecture
-
-GameStuAI Engine is built with modern web technologies:
-
-- **React**: For building the user interface
-- **Three.js**: 3D rendering engine
-- **React Three Fiber**: React renderer for Three.js
-- **Cannon.js**: Physics engine with Unreal Engine-like features
-- **ReactFlow**: Visual scripting system
-- **OpenAI API**: AI integration for asset generation and assistance
-- **TypeScript**: For type safety and better developer experience
-
-## 🤝 Contributing
-
-Contributions are welcome! This project aims to make game development accessible to everyone, so we especially value contributions that improve usability and accessibility.
-
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add some amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🔮 Roadmap
-
-- [x] Basic UI framework and project structure
-- [x] Scene editor with 3D rendering
-- [x] Visual scripting system
-- [x] Asset management
-- [x] World creator with terrain and object placement
-- [x] AI assistance integration
-- [x] 3D Character Model Management
-- [x] Physics integration with Unreal Engine-like features
-- [ ] Animation system
-- [ ] Game logic templates
-- [ ] Export to web
-- [ ] Export to desktop/mobile platforms
-- [ ] Marketplace for assets and templates
-
-## ✨ Inspiration
-
-This project is inspired by accessible game engines like Unity, Unreal Engine Blueprint system, and Godot, with a focus on removing the coding barrier to entry for creative individuals who want to make games. The AI integration draws inspiration from emerging AI tools in creative fields. 
+This project is licensed under the MIT License - see the LICENSE file for details. 

@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import axios from 'axios';
 import dotenv from 'dotenv';
+import Replicate from 'replicate';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -11,6 +11,11 @@ const __dirname = dirname(__filename);
 
 // Load environment variables
 dotenv.config();
+
+// Initialize Replicate client
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN,
+});
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -26,133 +31,45 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.post('/api/replicate/predictions', async (req, res) => {
+app.post('/api/replicate/run', async (req, res) => {
   try {
     console.log('Received model generation request:', JSON.stringify(req.body, null, 2));
     
-    const { version, input, apiKey } = req.body;
+    const { version, input } = req.body;
     
-    if (!apiKey) {
-      return res.status(400).json({ error: 'API key is required' });
+    if (!process.env.REPLICATE_API_TOKEN) {
+      return res.status(500).json({ error: 'REPLICATE_API_TOKEN environment variable is not set' });
     }
     
-    console.log('Making request to Replicate API with version:', version);
+    console.log('Running Replicate model with version:', version);
+    console.log('Input:', JSON.stringify(input, null, 2));
     
-    const response = await axios.post(
-      'https://api.replicate.com/v1/predictions',
-      {
-        version,
-        input
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const output = await replicate.run(version, { input });
     
-    console.log('Replicate API response:', response.data);
+    console.log('Replicate model output:', JSON.stringify(output, null, 2));
     
-    res.json(response.data);
+    res.json({ output });
   } catch (error) {
-    console.error('Error calling Replicate API:', error.response?.data || error.message);
+    console.error('Error running Replicate model:', error.message);
     
-    if (error.response) {
-      return res.status(error.response.status).json({
-        error: error.response.data || 'Error from Replicate API',
-        status: error.response.status
-      });
-    }
-    
-    res.status(500).json({ error: error.message || 'Internal server error' });
-  }
-});
-
-app.get('/api/replicate/predictions/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { apiKey } = req.query;
-    
-    if (!apiKey) {
-      return res.status(400).json({ error: 'API key is required' });
-    }
-    
-    console.log(`Checking status for prediction ${id}`);
-    
-    const response = await axios.get(
-      `https://api.replicate.com/v1/predictions/${id}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    console.log('Prediction status response:', response.data);
-    
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error checking prediction status:', error.response?.data || error.message);
-    
-    if (error.response) {
-      return res.status(error.response.status).json({
-        error: error.response.data || 'Error from Replicate API',
-        status: error.response.status
-      });
-    }
-    
-    res.status(500).json({ error: error.message || 'Internal server error' });
-  }
-});
-
-app.post('/api/replicate/predictions/:id/cancel', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { apiKey } = req.body;
-    
-    if (!apiKey) {
-      return res.status(400).json({ error: 'API key is required' });
-    }
-    
-    console.log(`Canceling prediction ${id}`);
-    
-    const response = await axios.post(
-      `https://api.replicate.com/v1/predictions/${id}/cancel`,
-      {},
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    console.log('Prediction cancel response:', response.data);
-    
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error canceling prediction:', error.response?.data || error.message);
-    
-    if (error.response) {
-      return res.status(error.response.status).json({
-        error: error.response.data || 'Error from Replicate API',
-        status: error.response.status
-      });
-    }
-    
-    res.status(500).json({ error: error.message || 'Internal server error' });
+    res.status(500).json({ 
+      error: error.message || 'Internal server error',
+      details: error.response?.data || error.stack
+    });
   }
 });
 
 // Test endpoint
 app.get('/api/test', (req, res) => {
-  res.json({ message: 'Server is running!' });
+  res.json({ 
+    message: 'Server is running!',
+    replicateConfigured: !!process.env.REPLICATE_API_TOKEN
+  });
 });
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Test the server: http://localhost:${PORT}/api/test`);
+  console.log(`Replicate API token configured: ${!!process.env.REPLICATE_API_TOKEN}`);
 }); 

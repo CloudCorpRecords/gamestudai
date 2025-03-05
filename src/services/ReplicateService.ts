@@ -47,7 +47,7 @@ export interface ModelGenerationStatus {
 class ReplicateService {
   private readonly API_KEY_STORAGE_KEY = 'apiKey_replicate';
   private readonly TRELLIS_MODEL = 'firtoz/trellis:4876f2a8da1c544772dffa32e8889da4a1bab3a1f5c1937bfcfccb99ae347251';
-  private readonly API_URL = 'https://api.replicate.com/v1/predictions';
+  private readonly API_BASE_URL = 'http://localhost:3001/api/replicate';
 
   /**
    * Get the API key from local storage
@@ -84,21 +84,6 @@ class ReplicateService {
   }
 
   /**
-   * Get headers for API requests
-   */
-  private getHeaders() {
-    const apiKey = this.getApiKey();
-    if (!apiKey) {
-      throw new Error('API key not configured');
-    }
-    
-    return {
-      'Authorization': `Bearer ${apiKey.trim()}`,
-      'Content-Type': 'application/json',
-    };
-  }
-
-  /**
    * Upload an image and return its URL
    * Note: In a real app, you would upload to a storage service
    * For this demo, we're using a sample image URL
@@ -117,117 +102,27 @@ class ReplicateService {
    * Generate a 3D model using the Trellis model
    */
   async generateModel(input: TrellisModelInput): Promise<string> {
-    if (!this.isConfigured()) {
-      throw new Error('API key not configured');
-    }
-
     try {
       console.log('Generating 3D model with input:', JSON.stringify(input, null, 2));
       
-      // Prepare the request payload
-      const payload = {
+      // Make the API request to our backend server
+      const response = await axios.post(`${this.API_BASE_URL}/run`, {
         version: this.TRELLIS_MODEL,
         input
-      };
-      
-      console.log('API URL:', this.API_URL);
-      console.log('Request payload:', JSON.stringify(payload, null, 2));
-      console.log('Headers:', JSON.stringify({
-        'Authorization': 'Bearer ****',
-        'Content-Type': 'application/json'
-      }, null, 2));
-      
-      // Make the API request
-      const response = await axios.post(
-        this.API_URL,
-        payload,
-        { headers: this.getHeaders() }
-      );
+      });
       
       console.log('Model generation response:', JSON.stringify(response.data, null, 2));
       
-      return response.data.id;
+      // The backend returns the complete output directly
+      const output = response.data.output;
+      
+      // Store the output in localStorage for later use
+      localStorage.setItem('lastModelOutput', JSON.stringify(output));
+      
+      // Return a dummy ID since we're not using the polling approach anymore
+      return 'direct-generation-completed';
     } catch (error) {
       console.error('Error generating model:', error);
-      
-      if (axios.isAxiosError(error)) {
-        console.error('Axios error details:');
-        console.error('Status:', error.response?.status);
-        console.error('Status text:', error.response?.statusText);
-        console.error('Response data:', JSON.stringify(error.response?.data, null, 2));
-        
-        if (error.response) {
-          throw new Error(`API error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
-        } else if (error.request) {
-          throw new Error('No response received from API server');
-        } else {
-          throw new Error(`Error setting up request: ${error.message}`);
-        }
-      }
-      
-      throw error;
-    }
-  }
-
-  /**
-   * Check the status of a model generation
-   */
-  async checkStatus(predictionId: string): Promise<ModelGenerationStatus> {
-    try {
-      console.log(`Checking status for prediction ${predictionId}`);
-      
-      const response = await axios.get(
-        `${this.API_URL}/${predictionId}`,
-        { headers: this.getHeaders() }
-      );
-      
-      console.log('Raw prediction status:', JSON.stringify(response.data, null, 2));
-      
-      // Map the prediction status to our internal status
-      let status: 'starting' | 'processing' | 'succeeded' | 'failed' | 'canceled';
-      switch (response.data.status) {
-        case 'starting':
-        case 'processing':
-          status = response.data.status;
-          break;
-        case 'succeeded':
-          status = 'succeeded';
-          break;
-        case 'failed':
-          status = 'failed';
-          break;
-        case 'canceled':
-          status = 'canceled';
-          break;
-        default:
-          status = 'processing';
-      }
-      
-      // Handle the output based on the status
-      let output: TrellisModelOutput | null = null;
-      if (response.data.output && typeof response.data.output === 'object') {
-        output = response.data.output as TrellisModelOutput;
-      }
-      
-      // Handle the error property
-      let errorMessage: string | null = null;
-      if (response.data.error) {
-        errorMessage = typeof response.data.error === 'string' 
-          ? response.data.error 
-          : JSON.stringify(response.data.error);
-      }
-      
-      return {
-        id: response.data.id,
-        status,
-        output,
-        error: errorMessage,
-        created_at: response.data.created_at,
-        started_at: response.data.started_at,
-        completed_at: response.data.completed_at
-      };
-    } catch (error) {
-      console.error('Error checking model status:', error);
       
       if (axios.isAxiosError(error) && error.response) {
         throw new Error(`API error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
@@ -238,24 +133,41 @@ class ReplicateService {
   }
 
   /**
+   * Check the status of a model generation
+   * Note: Since we're using the direct approach, this just returns the stored output
+   */
+  async checkStatus(predictionId: string): Promise<ModelGenerationStatus> {
+    try {
+      console.log(`Checking status for prediction ${predictionId}`);
+      
+      // Get the output from localStorage
+      const outputStr = localStorage.getItem('lastModelOutput');
+      const output = outputStr ? JSON.parse(outputStr) : null;
+      
+      console.log('Retrieved model output:', JSON.stringify(output, null, 2));
+      
+      // Create a status object
+      return {
+        id: predictionId,
+        status: output ? 'succeeded' : 'failed',
+        output: output as TrellisModelOutput,
+        error: output ? null : 'No output found',
+        created_at: new Date().toISOString(),
+        completed_at: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Error checking model status:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Cancel a model generation
+   * Note: Not applicable with the direct approach
    */
   async cancelGeneration(predictionId: string): Promise<boolean> {
-    try {
-      console.log(`Canceling prediction ${predictionId}`);
-      
-      await axios.post(
-        `${this.API_URL}/${predictionId}/cancel`,
-        {},
-        { headers: this.getHeaders() }
-      );
-      
-      console.log(`Prediction ${predictionId} canceled successfully`);
-      return true;
-    } catch (error) {
-      console.error('Error canceling prediction:', error);
-      return false;
-    }
+    console.log(`Canceling prediction ${predictionId} - not applicable with direct generation`);
+    return true;
   }
 }
 
