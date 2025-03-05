@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import TerrainEditor from './TerrainEditor';
 import ObjectPlacement from './ObjectPlacement';
+import GameAssembler from './GameAssembler';
 import './WorldCreator.css';
 
 // World creator modes
 enum WorldCreatorMode {
   TERRAIN = 'terrain',
   OBJECT = 'object',
-  ENVIRONMENT = 'environment'
+  ENVIRONMENT = 'environment',
+  GAME_ASSEMBLER = 'game_assembler'
 }
 
 // Interface for saved world data
@@ -108,6 +110,8 @@ const WorldCreator: React.FC = () => {
             <p>Coming soon...</p>
           </div>
         );
+      case WorldCreatorMode.GAME_ASSEMBLER:
+        return <GameAssembler />;
       default:
         return <TerrainEditor />;
     }
@@ -161,6 +165,13 @@ const WorldCreator: React.FC = () => {
           onClick={() => handleModeChange(WorldCreatorMode.ENVIRONMENT)}
         >
           Environment
+        </button>
+        
+        <button 
+          className={`tab ${activeMode === WorldCreatorMode.GAME_ASSEMBLER ? 'active' : ''}`}
+          onClick={() => handleModeChange(WorldCreatorMode.GAME_ASSEMBLER)}
+        >
+          Game Assembler
         </button>
       </div>
       
