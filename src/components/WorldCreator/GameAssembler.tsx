@@ -38,10 +38,11 @@ interface GameComponent {
 
 // Mock data for templates
 const TEMPLATE_CATEGORIES = [
-  'Characters', 'Environment', 'Props', 'Lights', 'Effects', 'UI', 'Gameplay'
+  'Characters', 'Environment', 'Props', 'Lights', 'Effects', 'UI', 'Gameplay', 'Vehicles', 'Weapons'
 ];
 
 const OBJECT_TEMPLATES: GameObjectTemplate[] = [
+  // Characters
   {
     id: 'template_character_player',
     name: 'Player Character',
@@ -51,6 +52,32 @@ const OBJECT_TEMPLATES: GameObjectTemplate[] = [
     description: 'Default player character with basic movement controls'
   },
   {
+    id: 'template_character_npc',
+    name: 'NPC Character',
+    category: 'Characters',
+    thumbnail: '/assets/thumbnails/npc.png',
+    prefab: 'character_npc',
+    description: 'Non-player character with AI behavior system'
+  },
+  {
+    id: 'template_character_enemy',
+    name: 'Enemy Character',
+    category: 'Characters',
+    thumbnail: '/assets/thumbnails/enemy.png',
+    prefab: 'character_enemy',
+    description: 'Hostile enemy with combat AI and attack patterns'
+  },
+  {
+    id: 'template_character_companion',
+    name: 'Companion',
+    category: 'Characters',
+    thumbnail: '/assets/thumbnails/companion.png',
+    prefab: 'character_companion',
+    description: 'Friendly AI companion that follows and assists the player'
+  },
+  
+  // Environment
+  {
     id: 'template_env_platform',
     name: 'Platform',
     category: 'Environment',
@@ -58,6 +85,40 @@ const OBJECT_TEMPLATES: GameObjectTemplate[] = [
     prefab: 'env_platform',
     description: 'Basic platform for characters to stand on'
   },
+  {
+    id: 'template_env_terrain',
+    name: 'Terrain Block',
+    category: 'Environment',
+    thumbnail: '/assets/thumbnails/terrain.png',
+    prefab: 'env_terrain',
+    description: 'Customizable terrain block with physics properties'
+  },
+  {
+    id: 'template_env_water',
+    name: 'Water Surface',
+    category: 'Environment',
+    thumbnail: '/assets/thumbnails/water.png',
+    prefab: 'env_water',
+    description: 'Interactive water surface with physics and reflection'
+  },
+  {
+    id: 'template_env_tree',
+    name: 'Tree',
+    category: 'Environment',
+    thumbnail: '/assets/thumbnails/tree.png',
+    prefab: 'env_tree',
+    description: 'Decorative tree with wind animation'
+  },
+  {
+    id: 'template_env_rock',
+    name: 'Rock Formation',
+    category: 'Environment',
+    thumbnail: '/assets/thumbnails/rock.png',
+    prefab: 'env_rock',
+    description: 'Natural rock formation with collision'
+  },
+  
+  // Props
   {
     id: 'template_prop_crate',
     name: 'Crate',
@@ -67,6 +128,40 @@ const OBJECT_TEMPLATES: GameObjectTemplate[] = [
     description: 'Destructible crate that can contain items'
   },
   {
+    id: 'template_prop_barrel',
+    name: 'Barrel',
+    category: 'Props',
+    thumbnail: '/assets/thumbnails/barrel.png',
+    prefab: 'prop_barrel',
+    description: 'Explosive barrel that reacts to damage'
+  },
+  {
+    id: 'template_prop_chair',
+    name: 'Chair',
+    category: 'Props',
+    thumbnail: '/assets/thumbnails/chair.png',
+    prefab: 'prop_chair',
+    description: 'Sittable chair with interaction'
+  },
+  {
+    id: 'template_prop_table',
+    name: 'Table',
+    category: 'Props',
+    thumbnail: '/assets/thumbnails/table.png',
+    prefab: 'prop_table',
+    description: 'Table with physics and item placement'
+  },
+  {
+    id: 'template_prop_door',
+    name: 'Door',
+    category: 'Props',
+    thumbnail: '/assets/thumbnails/door.png',
+    prefab: 'prop_door',
+    description: 'Interactive door with open/close animation'
+  },
+  
+  // Lights
+  {
     id: 'template_light_point',
     name: 'Point Light',
     category: 'Lights',
@@ -74,6 +169,40 @@ const OBJECT_TEMPLATES: GameObjectTemplate[] = [
     prefab: 'light_point',
     description: 'Omnidirectional light source'
   },
+  {
+    id: 'template_light_spot',
+    name: 'Spot Light',
+    category: 'Lights',
+    thumbnail: '/assets/thumbnails/spot_light.png',
+    prefab: 'light_spot',
+    description: 'Directional cone of light with adjustable angle'
+  },
+  {
+    id: 'template_light_area',
+    name: 'Area Light',
+    category: 'Lights',
+    thumbnail: '/assets/thumbnails/area_light.png',
+    prefab: 'light_area',
+    description: 'Rectangular light source for soft illumination'
+  },
+  {
+    id: 'template_light_ambient',
+    name: 'Ambient Light',
+    category: 'Lights',
+    thumbnail: '/assets/thumbnails/ambient_light.png',
+    prefab: 'light_ambient',
+    description: 'Global ambient lighting for the scene'
+  },
+  {
+    id: 'template_light_torch',
+    name: 'Torch',
+    category: 'Lights',
+    thumbnail: '/assets/thumbnails/torch.png',
+    prefab: 'light_torch',
+    description: 'Flickering torch with light and particle effects'
+  },
+  
+  // Effects
   {
     id: 'template_effect_particle',
     name: 'Particle System',
@@ -83,6 +212,40 @@ const OBJECT_TEMPLATES: GameObjectTemplate[] = [
     description: 'Customizable particle effect system'
   },
   {
+    id: 'template_effect_fire',
+    name: 'Fire',
+    category: 'Effects',
+    thumbnail: '/assets/thumbnails/fire.png',
+    prefab: 'effect_fire',
+    description: 'Realistic fire effect with light and heat'
+  },
+  {
+    id: 'template_effect_smoke',
+    name: 'Smoke',
+    category: 'Effects',
+    thumbnail: '/assets/thumbnails/smoke.png',
+    prefab: 'effect_smoke',
+    description: 'Billowing smoke effect with wind influence'
+  },
+  {
+    id: 'template_effect_explosion',
+    name: 'Explosion',
+    category: 'Effects',
+    thumbnail: '/assets/thumbnails/explosion.png',
+    prefab: 'effect_explosion',
+    description: 'Explosion with shockwave, particles, and sound'
+  },
+  {
+    id: 'template_effect_portal',
+    name: 'Portal',
+    category: 'Effects',
+    thumbnail: '/assets/thumbnails/portal.png',
+    prefab: 'effect_portal',
+    description: 'Teleportation portal with swirling effect'
+  },
+  
+  // UI
+  {
     id: 'template_ui_button',
     name: 'Button',
     category: 'UI',
@@ -91,12 +254,146 @@ const OBJECT_TEMPLATES: GameObjectTemplate[] = [
     description: 'Interactive button for user interfaces'
   },
   {
+    id: 'template_ui_panel',
+    name: 'Panel',
+    category: 'UI',
+    thumbnail: '/assets/thumbnails/panel.png',
+    prefab: 'ui_panel',
+    description: 'Container panel for UI elements'
+  },
+  {
+    id: 'template_ui_text',
+    name: 'Text',
+    category: 'UI',
+    thumbnail: '/assets/thumbnails/text.png',
+    prefab: 'ui_text',
+    description: 'Text display with customizable font and style'
+  },
+  {
+    id: 'template_ui_healthbar',
+    name: 'Health Bar',
+    category: 'UI',
+    thumbnail: '/assets/thumbnails/healthbar.png',
+    prefab: 'ui_healthbar',
+    description: 'Dynamic health bar that connects to character stats'
+  },
+  {
+    id: 'template_ui_inventory',
+    name: 'Inventory Slot',
+    category: 'UI',
+    thumbnail: '/assets/thumbnails/inventory.png',
+    prefab: 'ui_inventory',
+    description: 'Inventory slot with drag-and-drop functionality'
+  },
+  
+  // Gameplay
+  {
     id: 'template_gameplay_trigger',
     name: 'Trigger Volume',
     category: 'Gameplay',
     thumbnail: '/assets/thumbnails/trigger.png',
     prefab: 'gameplay_trigger',
     description: 'Volume that triggers events when objects enter or exit'
+  },
+  {
+    id: 'template_gameplay_spawner',
+    name: 'Enemy Spawner',
+    category: 'Gameplay',
+    thumbnail: '/assets/thumbnails/spawner.png',
+    prefab: 'gameplay_spawner',
+    description: 'Spawns enemies at intervals or when triggered'
+  },
+  {
+    id: 'template_gameplay_checkpoint',
+    name: 'Checkpoint',
+    category: 'Gameplay',
+    thumbnail: '/assets/thumbnails/checkpoint.png',
+    prefab: 'gameplay_checkpoint',
+    description: 'Save point that stores player progress'
+  },
+  {
+    id: 'template_gameplay_collectible',
+    name: 'Collectible',
+    category: 'Gameplay',
+    thumbnail: '/assets/thumbnails/collectible.png',
+    prefab: 'gameplay_collectible',
+    description: 'Item that can be collected by the player'
+  },
+  {
+    id: 'template_gameplay_puzzle',
+    name: 'Puzzle Element',
+    category: 'Gameplay',
+    thumbnail: '/assets/thumbnails/puzzle.png',
+    prefab: 'gameplay_puzzle',
+    description: 'Interactive element for puzzle mechanics'
+  },
+  
+  // Vehicles
+  {
+    id: 'template_vehicle_car',
+    name: 'Car',
+    category: 'Vehicles',
+    thumbnail: '/assets/thumbnails/car.png',
+    prefab: 'vehicle_car',
+    description: 'Drivable car with realistic physics'
+  },
+  {
+    id: 'template_vehicle_aircraft',
+    name: 'Aircraft',
+    category: 'Vehicles',
+    thumbnail: '/assets/thumbnails/aircraft.png',
+    prefab: 'vehicle_aircraft',
+    description: 'Flyable aircraft with aerodynamics'
+  },
+  {
+    id: 'template_vehicle_boat',
+    name: 'Boat',
+    category: 'Vehicles',
+    thumbnail: '/assets/thumbnails/boat.png',
+    prefab: 'vehicle_boat',
+    description: 'Boat with water physics and buoyancy'
+  },
+  {
+    id: 'template_vehicle_motorcycle',
+    name: 'Motorcycle',
+    category: 'Vehicles',
+    thumbnail: '/assets/thumbnails/motorcycle.png',
+    prefab: 'vehicle_motorcycle',
+    description: 'Rideable motorcycle with leaning physics'
+  },
+  
+  // Weapons
+  {
+    id: 'template_weapon_sword',
+    name: 'Sword',
+    category: 'Weapons',
+    thumbnail: '/assets/thumbnails/sword.png',
+    prefab: 'weapon_sword',
+    description: 'Melee weapon with swing animations and damage'
+  },
+  {
+    id: 'template_weapon_gun',
+    name: 'Gun',
+    category: 'Weapons',
+    thumbnail: '/assets/thumbnails/gun.png',
+    prefab: 'weapon_gun',
+    description: 'Ranged weapon with projectile system'
+  },
+  {
+    id: 'template_weapon_bow',
+    name: 'Bow',
+    category: 'Weapons',
+    thumbnail: '/assets/thumbnails/bow.png',
+    prefab: 'weapon_bow',
+    description: 'Bow and arrow with physics-based projectiles'
+  },
+  {
+    id: 'template_weapon_grenade',
+    name: 'Grenade',
+    category: 'Weapons',
+    thumbnail: '/assets/thumbnails/grenade.png',
+    prefab: 'weapon_grenade',
+    description: 'Throwable explosive with timer and physics'
   }
 ];
 
@@ -114,6 +411,7 @@ const GameObjectMesh: React.FC<{
     // In a real implementation, this would load the actual model
     // For now, we'll use simple geometries
     switch (templateId) {
+      // Characters
       case 'template_character_player':
         return (
           <>
@@ -121,6 +419,29 @@ const GameObjectMesh: React.FC<{
             <meshStandardMaterial color="#4285F4" />
           </>
         );
+      case 'template_character_npc':
+        return (
+          <>
+            <capsuleGeometry args={[0.5, 1, 4, 8]} />
+            <meshStandardMaterial color="#34A853" />
+          </>
+        );
+      case 'template_character_enemy':
+        return (
+          <>
+            <capsuleGeometry args={[0.5, 1, 4, 8]} />
+            <meshStandardMaterial color="#EA4335" />
+          </>
+        );
+      case 'template_character_companion':
+        return (
+          <>
+            <capsuleGeometry args={[0.4, 0.8, 4, 8]} />
+            <meshStandardMaterial color="#FBBC05" />
+          </>
+        );
+      
+      // Environment
       case 'template_env_platform':
         return (
           <>
@@ -128,6 +449,44 @@ const GameObjectMesh: React.FC<{
             <meshStandardMaterial color="#34A853" />
           </>
         );
+      case 'template_env_terrain':
+        return (
+          <>
+            <boxGeometry args={[4, 2, 4]} />
+            <meshStandardMaterial color="#8B4513" />
+          </>
+        );
+      case 'template_env_water':
+        return (
+          <>
+            <planeGeometry args={[4, 4, 8, 8]} />
+            <meshStandardMaterial color="#1E90FF" transparent opacity={0.8} />
+          </>
+        );
+      case 'template_env_tree':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 1, 0]}>
+                <cylinderGeometry args={[0.2, 0.3, 2, 8]} />
+                <meshStandardMaterial color="#8B4513" />
+              </mesh>
+              <mesh position={[0, 2.5, 0]}>
+                <coneGeometry args={[1.5, 3, 8]} />
+                <meshStandardMaterial color="#228B22" />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_env_rock':
+        return (
+          <>
+            <dodecahedronGeometry args={[1, 0]} />
+            <meshStandardMaterial color="#808080" />
+          </>
+        );
+      
+      // Props
       case 'template_prop_crate':
         return (
           <>
@@ -135,6 +494,88 @@ const GameObjectMesh: React.FC<{
             <meshStandardMaterial color="#FBBC05" />
           </>
         );
+      case 'template_prop_barrel':
+        return (
+          <>
+            <cylinderGeometry args={[0.5, 0.5, 1.5, 16]} />
+            <meshStandardMaterial color="#FF5722" />
+          </>
+        );
+      case 'template_prop_chair':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0.5, 0]}>
+                <boxGeometry args={[0.8, 0.1, 0.8]} />
+                <meshStandardMaterial color="#A0522D" />
+              </mesh>
+              <mesh position={[0, 1.2, -0.35]}>
+                <boxGeometry args={[0.8, 0.8, 0.1]} />
+                <meshStandardMaterial color="#A0522D" />
+              </mesh>
+              <mesh position={[-0.35, 0.25, -0.35]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.5, 8]} />
+                <meshStandardMaterial color="#A0522D" />
+              </mesh>
+              <mesh position={[0.35, 0.25, -0.35]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.5, 8]} />
+                <meshStandardMaterial color="#A0522D" />
+              </mesh>
+              <mesh position={[-0.35, 0.25, 0.35]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.5, 8]} />
+                <meshStandardMaterial color="#A0522D" />
+              </mesh>
+              <mesh position={[0.35, 0.25, 0.35]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.5, 8]} />
+                <meshStandardMaterial color="#A0522D" />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_prop_table':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0.75, 0]}>
+                <boxGeometry args={[1.5, 0.1, 1]} />
+                <meshStandardMaterial color="#8B4513" />
+              </mesh>
+              <mesh position={[-0.6, 0.375, -0.4]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.75, 8]} />
+                <meshStandardMaterial color="#8B4513" />
+              </mesh>
+              <mesh position={[0.6, 0.375, -0.4]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.75, 8]} />
+                <meshStandardMaterial color="#8B4513" />
+              </mesh>
+              <mesh position={[-0.6, 0.375, 0.4]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.75, 8]} />
+                <meshStandardMaterial color="#8B4513" />
+              </mesh>
+              <mesh position={[0.6, 0.375, 0.4]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.75, 8]} />
+                <meshStandardMaterial color="#8B4513" />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_prop_door':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 1, 0]}>
+                <boxGeometry args={[1, 2, 0.1]} />
+                <meshStandardMaterial color="#8B4513" />
+              </mesh>
+              <mesh position={[0.4, 1, 0.05]}>
+                <sphereGeometry args={[0.05, 8, 8]} />
+                <meshStandardMaterial color="#FFD700" />
+              </mesh>
+            </group>
+          </>
+        );
+      
+      // Lights
       case 'template_light_point':
         return (
           <>
@@ -142,6 +583,56 @@ const GameObjectMesh: React.FC<{
             <meshStandardMaterial color="#FFFF00" emissive="#FFFF00" emissiveIntensity={2} />
           </>
         );
+      case 'template_light_spot':
+        return (
+          <>
+            <group>
+              <mesh>
+                <sphereGeometry args={[0.2, 16, 16]} />
+                <meshStandardMaterial color="#FFFF00" emissive="#FFFF00" emissiveIntensity={2} />
+              </mesh>
+              <mesh position={[0, -0.3, 0]} rotation={[Math.PI/2, 0, 0]}>
+                <coneGeometry args={[0.3, 0.5, 16, 1, true]} />
+                <meshStandardMaterial color="#FFFF00" transparent opacity={0.3} emissive="#FFFF00" emissiveIntensity={0.5} />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_light_area':
+        return (
+          <>
+            <group>
+              <mesh>
+                <boxGeometry args={[1, 0.1, 1]} />
+                <meshStandardMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={1} />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_light_ambient':
+        return (
+          <>
+            <sphereGeometry args={[0.3, 16, 16]} />
+            <meshStandardMaterial color="#FFFFFF" wireframe transparent opacity={0.5} />
+          </>
+        );
+      case 'template_light_torch':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0.5, 0]}>
+                <cylinderGeometry args={[0.05, 0.1, 1, 8]} />
+                <meshStandardMaterial color="#8B4513" />
+              </mesh>
+              <mesh position={[0, 1, 0]}>
+                <sphereGeometry args={[0.15, 8, 8]} />
+                <meshStandardMaterial color="#FF4500" emissive="#FF4500" emissiveIntensity={2} />
+              </mesh>
+            </group>
+          </>
+        );
+      
+      // Effects
       case 'template_effect_particle':
         return (
           <>
@@ -149,6 +640,40 @@ const GameObjectMesh: React.FC<{
             <meshStandardMaterial color="#EA4335" transparent opacity={0.7} />
           </>
         );
+      case 'template_effect_fire':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0.2, 0]}>
+                <coneGeometry args={[0.5, 1, 8]} />
+                <meshStandardMaterial color="#FF4500" emissive="#FF4500" emissiveIntensity={2} transparent opacity={0.8} />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_effect_smoke':
+        return (
+          <>
+            <sphereGeometry args={[0.5, 8, 8]} />
+            <meshStandardMaterial color="#A9A9A9" transparent opacity={0.4} />
+          </>
+        );
+      case 'template_effect_explosion':
+        return (
+          <>
+            <sphereGeometry args={[0.7, 16, 16]} />
+            <meshStandardMaterial color="#FF4500" emissive="#FF4500" emissiveIntensity={1.5} transparent opacity={0.6} />
+          </>
+        );
+      case 'template_effect_portal':
+        return (
+          <>
+            <torusGeometry args={[0.7, 0.2, 16, 32]} />
+            <meshStandardMaterial color="#9C27B0" emissive="#9C27B0" emissiveIntensity={1.5} />
+          </>
+        );
+      
+      // UI
       case 'template_ui_button':
         return (
           <>
@@ -156,6 +681,52 @@ const GameObjectMesh: React.FC<{
             <meshStandardMaterial color="#4285F4" />
           </>
         );
+      case 'template_ui_panel':
+        return (
+          <>
+            <boxGeometry args={[3, 2, 0.05]} />
+            <meshStandardMaterial color="#424242" transparent opacity={0.8} />
+          </>
+        );
+      case 'template_ui_text':
+        return (
+          <>
+            <boxGeometry args={[2, 0.5, 0.05]} />
+            <meshStandardMaterial color="#FFFFFF" />
+          </>
+        );
+      case 'template_ui_healthbar':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0, 0]}>
+                <boxGeometry args={[2, 0.3, 0.05]} />
+                <meshStandardMaterial color="#424242" />
+              </mesh>
+              <mesh position={[-0.5, 0, 0.01]}>
+                <boxGeometry args={[1, 0.2, 0.05]} />
+                <meshStandardMaterial color="#4CAF50" />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_ui_inventory':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0, 0]}>
+                <boxGeometry args={[0.8, 0.8, 0.05]} />
+                <meshStandardMaterial color="#424242" />
+              </mesh>
+              <mesh position={[0, 0, 0.01]}>
+                <boxGeometry args={[0.7, 0.7, 0.05]} />
+                <meshStandardMaterial color="#616161" />
+              </mesh>
+            </group>
+          </>
+        );
+      
+      // Gameplay
       case 'template_gameplay_trigger':
         return (
           <>
@@ -163,6 +734,221 @@ const GameObjectMesh: React.FC<{
             <meshStandardMaterial color="#EA4335" transparent opacity={0.3} />
           </>
         );
+      case 'template_gameplay_spawner':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0.1, 0]}>
+                <cylinderGeometry args={[1, 1, 0.2, 16]} />
+                <meshStandardMaterial color="#673AB7" />
+              </mesh>
+              <mesh position={[0, 0.3, 0]}>
+                <coneGeometry args={[0.5, 0.5, 16]} />
+                <meshStandardMaterial color="#673AB7" emissive="#673AB7" emissiveIntensity={0.5} />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_gameplay_checkpoint':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 1, 0]}>
+                <cylinderGeometry args={[0.1, 0.1, 2, 8]} />
+                <meshStandardMaterial color="#9E9E9E" />
+              </mesh>
+              <mesh position={[0, 2, 0]}>
+                <boxGeometry args={[0.8, 0.5, 0.1]} />
+                <meshStandardMaterial color="#4CAF50" emissive="#4CAF50" emissiveIntensity={0.5} />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_gameplay_collectible':
+        return (
+          <>
+            <group rotation={[0, Math.PI/4, Math.PI/4]}>
+              <boxGeometry args={[0.5, 0.5, 0.5]} />
+              <meshStandardMaterial color="#FFD700" metalness={1} roughness={0.3} />
+            </group>
+          </>
+        );
+      case 'template_gameplay_puzzle':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0, 0]}>
+                <boxGeometry args={[1, 1, 1]} />
+                <meshStandardMaterial color="#00BCD4" />
+              </mesh>
+              <mesh position={[0, 0, 0.51]}>
+                <boxGeometry args={[0.5, 0.5, 0.1]} />
+                <meshStandardMaterial color="#FFFFFF" />
+              </mesh>
+            </group>
+          </>
+        );
+      
+      // Vehicles
+      case 'template_vehicle_car':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0.4, 0]}>
+                <boxGeometry args={[2, 0.5, 1]} />
+                <meshStandardMaterial color="#3F51B5" />
+              </mesh>
+              <mesh position={[0, 0.8, 0]}>
+                <boxGeometry args={[1.2, 0.4, 0.9]} />
+                <meshStandardMaterial color="#3F51B5" />
+              </mesh>
+              <mesh position={[-0.6, 0.2, 0.4]} rotation={[Math.PI/2, 0, 0]}>
+                <cylinderGeometry args={[0.2, 0.2, 0.1, 16]} />
+                <meshStandardMaterial color="#212121" />
+              </mesh>
+              <mesh position={[0.6, 0.2, 0.4]} rotation={[Math.PI/2, 0, 0]}>
+                <cylinderGeometry args={[0.2, 0.2, 0.1, 16]} />
+                <meshStandardMaterial color="#212121" />
+              </mesh>
+              <mesh position={[-0.6, 0.2, -0.4]} rotation={[Math.PI/2, 0, 0]}>
+                <cylinderGeometry args={[0.2, 0.2, 0.1, 16]} />
+                <meshStandardMaterial color="#212121" />
+              </mesh>
+              <mesh position={[0.6, 0.2, -0.4]} rotation={[Math.PI/2, 0, 0]}>
+                <cylinderGeometry args={[0.2, 0.2, 0.1, 16]} />
+                <meshStandardMaterial color="#212121" />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_vehicle_aircraft':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI/2]}>
+                <cylinderGeometry args={[0.3, 0.5, 2, 8]} />
+                <meshStandardMaterial color="#F5F5F5" />
+              </mesh>
+              <mesh position={[0, 0, 0]}>
+                <boxGeometry args={[2, 0.1, 0.1]} />
+                <meshStandardMaterial color="#F5F5F5" />
+              </mesh>
+              <mesh position={[-0.8, 0, 0]} rotation={[0, 0, Math.PI/4]}>
+                <boxGeometry args={[0.5, 0.1, 0.5]} />
+                <meshStandardMaterial color="#F5F5F5" />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_vehicle_boat':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0.2, 0]}>
+                <boxGeometry args={[2, 0.4, 0.8]} />
+                <meshStandardMaterial color="#2196F3" />
+              </mesh>
+              <mesh position={[0.8, 0.4, 0]} rotation={[0, 0, -Math.PI/2]}>
+                <coneGeometry args={[0.4, 0.8, 8, 1]} />
+                <meshStandardMaterial color="#2196F3" />
+              </mesh>
+              <mesh position={[-0.8, 0.4, 0]} rotation={[0, 0, Math.PI/2]}>
+                <coneGeometry args={[0.4, 0.8, 8, 1]} />
+                <meshStandardMaterial color="#2196F3" />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_vehicle_motorcycle':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0.5, 0]} rotation={[Math.PI/2, 0, 0]}>
+                <cylinderGeometry args={[0.05, 0.05, 1.2, 8]} />
+                <meshStandardMaterial color="#212121" />
+              </mesh>
+              <mesh position={[-0.5, 0.3, 0]} rotation={[Math.PI/2, 0, 0]}>
+                <cylinderGeometry args={[0.3, 0.3, 0.1, 16]} />
+                <meshStandardMaterial color="#212121" />
+              </mesh>
+              <mesh position={[0.5, 0.3, 0]} rotation={[Math.PI/2, 0, 0]}>
+                <cylinderGeometry args={[0.3, 0.3, 0.1, 16]} />
+                <meshStandardMaterial color="#212121" />
+              </mesh>
+              <mesh position={[0, 0.7, 0]}>
+                <boxGeometry args={[0.8, 0.2, 0.3]} />
+                <meshStandardMaterial color="#F44336" />
+              </mesh>
+            </group>
+          </>
+        );
+      
+      // Weapons
+      case 'template_weapon_sword':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0.8, 0]}>
+                <boxGeometry args={[0.1, 1.5, 0.02]} />
+                <meshStandardMaterial color="#BDBDBD" metalness={0.8} roughness={0.2} />
+              </mesh>
+              <mesh position={[0, 0, 0]}>
+                <boxGeometry args={[0.2, 0.3, 0.05]} />
+                <meshStandardMaterial color="#8B4513" />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_weapon_gun':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0, 0]}>
+                <boxGeometry args={[0.2, 0.3, 0.8]} />
+                <meshStandardMaterial color="#212121" />
+              </mesh>
+              <mesh position={[0, -0.2, 0.2]}>
+                <boxGeometry args={[0.15, 0.3, 0.2]} />
+                <meshStandardMaterial color="#212121" />
+              </mesh>
+              <mesh position={[0, 0, -0.5]} rotation={[Math.PI/2, 0, 0]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.4, 8]} />
+                <meshStandardMaterial color="#212121" />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_weapon_bow':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI/2]}>
+                <torusGeometry args={[0.5, 0.02, 8, 16, Math.PI]} />
+                <meshStandardMaterial color="#8B4513" />
+              </mesh>
+              <mesh position={[0, 0, 0]}>
+                <cylinderGeometry args={[0.005, 0.005, 1, 8]} />
+                <meshStandardMaterial color="#FFFFFF" />
+              </mesh>
+            </group>
+          </>
+        );
+      case 'template_weapon_grenade':
+        return (
+          <>
+            <group>
+              <mesh position={[0, 0, 0]}>
+                <sphereGeometry args={[0.3, 16, 16]} />
+                <meshStandardMaterial color="#4CAF50" />
+              </mesh>
+              <mesh position={[0, 0.3, 0]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.2, 8]} />
+                <meshStandardMaterial color="#9E9E9E" />
+              </mesh>
+            </group>
+          </>
+        );
+      
       default:
         return (
           <>
