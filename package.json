@@ -10,7 +10,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "vite",
-    "start:all": "node start.js"
+    "start:all": "node start.js",
+    "start:direct": "node run-direct.js"
   },
   "dependencies": {
     "@react-three/cannon": "^6.6.0",
