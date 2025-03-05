@@ -110,9 +110,15 @@ const AIModelGenerator: React.FC = () => {
     setGenerationStatus(null);
     
     try {
+      console.log('Starting model generation process...');
+      console.log('Selected image:', selectedImage);
+      console.log('Model parameters:', modelParams);
+      
       // Upload image
       setUploadStatus('uploading');
+      console.log('Uploading image...');
       const imageUrl = await replicateService.uploadImage(selectedImage);
+      console.log('Image uploaded successfully:', imageUrl);
       setUploadStatus('success');
       
       // Start model generation
@@ -121,7 +127,9 @@ const AIModelGenerator: React.FC = () => {
         images: [imageUrl]
       } as TrellisModelInput;
       
+      console.log('Sending model generation request with input:', input);
       const id = await replicateService.generateModel(input);
+      console.log('Model generation started with ID:', id);
       setGenerationId(id);
       
       // Start polling for status
@@ -129,34 +137,55 @@ const AIModelGenerator: React.FC = () => {
         clearInterval(statusPollingRef.current);
       }
       
+      let isMounted = true;
+      
+      // Clean up function to prevent memory leaks
+      const cleanup = () => {
+        isMounted = false;
+        if (statusPollingRef.current) {
+          clearInterval(statusPollingRef.current);
+          statusPollingRef.current = null;
+        }
+      };
+      
       statusPollingRef.current = setInterval(async () => {
         try {
+          console.log('Checking status for generation ID:', id);
           const status = await replicateService.checkStatus(id);
-          setGenerationStatus(status);
+          console.log('Current generation status:', status);
           
-          // Stop polling when generation is complete
-          if (['succeeded', 'failed', 'canceled'].includes(status.status)) {
-            if (statusPollingRef.current) {
-              clearInterval(statusPollingRef.current);
-              statusPollingRef.current = null;
+          // Only update state if component is still mounted
+          if (isMounted) {
+            setGenerationStatus(status);
+            
+            // Stop polling when generation is complete
+            if (['succeeded', 'failed', 'canceled'].includes(status.status)) {
+              console.log('Generation process completed with status:', status.status);
+              cleanup();
+              setIsGenerating(false);
             }
-            setIsGenerating(false);
           }
         } catch (error) {
           console.error('Error checking generation status:', error);
-          if (statusPollingRef.current) {
-            clearInterval(statusPollingRef.current);
-            statusPollingRef.current = null;
+          if (isMounted) {
+            cleanup();
+            setIsGenerating(false);
+            setGenerationError('Failed to check generation status');
           }
-          setIsGenerating(false);
-          setGenerationError('Failed to check generation status');
         }
-      }, 5000); // Poll every 5 seconds
+      }, 2000); // Poll every 2 seconds
+      
+      // Clean up on unmount
+      return cleanup;
       
     } catch (error) {
       console.error('Error generating model:', error);
+      if (error instanceof Error) {
+        setGenerationError(`Failed to generate model: ${error.message}`);
+      } else {
+        setGenerationError('Failed to generate model: Unknown error');
+      }
       setIsGenerating(false);
-      setGenerationError('Failed to generate model');
       setUploadStatus('error');
     }
   };

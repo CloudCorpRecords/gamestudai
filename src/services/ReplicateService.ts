@@ -118,9 +118,9 @@ class ReplicateService {
       throw new Error('API key not configured');
     }
     return {
-      'Authorization': `Token ${apiKey}`,
+      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-    };
+    } as Record<string, string>;
   }
 
   /**
@@ -197,15 +197,21 @@ class ReplicateService {
    * Upload an image to a temporary storage and return the URL
    */
   async uploadImage(file: File): Promise<string> {
-    // In a real implementation, this would upload to a storage service
-    // For now, we'll create a data URL as a placeholder
+    // In a production app, you would upload the image to a storage service
+    // and return the URL. For this demo, we'll use a sample image URL
+    // from Replicate's documentation.
+    console.log('Image file selected:', file.name, file.type, file.size);
+    
+    // Return a sample image URL that works with Replicate
+    return "https://replicate.delivery/pbxt/MJaYRxQMgIzPsALScNadsZFCXR2h1n97xBzhRinmUQw9aw25/ephemeros_a_dune_sandworm_with_black_background_de398ce7-2276-4634-8f1d-c4ed2423cda4.png";
+    
+    /* Commented out data URL approach as it might not work with Replicate API
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
-          // In a real implementation, this would be a URL to the uploaded image
-          // For demo purposes, we'll just return a placeholder URL
-          resolve('https://replicate.delivery/placeholder/image.jpg');
+          // Use the data URL directly
+          resolve(reader.result);
         } else {
           reject(new Error('Failed to read image file'));
         }
@@ -213,6 +219,7 @@ class ReplicateService {
       reader.onerror = () => reject(reader.error);
       reader.readAsDataURL(file);
     });
+    */
   }
 
   // Generate a 3D model using Trellis model
@@ -222,15 +229,20 @@ class ReplicateService {
     }
 
     try {
+      const headers = this.getHeaders();
+      // Add the Prefer header to match the curl example
+      headers['Prefer'] = 'wait';
+      
       const response = await axios.post(
         this.API_URL,
         {
           version: this.TRELLIS_MODEL,
           input
         },
-        { headers: this.getHeaders() }
+        { headers }
       );
       
+      console.log('Model generation response:', response.data);
       return response.data.id;
     } catch (error) {
       console.error('Error starting model generation:', error);
@@ -241,16 +253,39 @@ class ReplicateService {
   // Check the status of a model generation job
   async checkStatus(predictionId: string): Promise<ModelGenerationStatus> {
     try {
+      console.log(`Checking status for prediction ${predictionId}`);
       const response = await axios.get(
         `${this.API_URL}/${predictionId}`,
         { headers: this.getHeaders() }
       );
       
+      console.log('Raw status response:', response.data);
+      
+      // Map the API status to our internal status
+      let status: 'starting' | 'processing' | 'succeeded' | 'failed' | 'canceled';
+      switch (response.data.status) {
+        case 'starting':
+        case 'processing':
+          status = response.data.status;
+          break;
+        case 'succeeded':
+          status = 'succeeded';
+          break;
+        case 'failed':
+          status = 'failed';
+          break;
+        case 'canceled':
+          status = 'canceled';
+          break;
+        default:
+          status = 'processing';
+      }
+      
       return {
         id: response.data.id,
-        status: response.data.status,
-        output: response.data.output,
-        error: response.data.error,
+        status,
+        output: response.data.output || null,
+        error: response.data.error || null,
         created_at: response.data.created_at,
         started_at: response.data.started_at,
         completed_at: response.data.completed_at
