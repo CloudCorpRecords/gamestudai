@@ -85,17 +85,32 @@ class ReplicateService {
 
   /**
    * Upload an image and return its URL
-   * Note: In a real app, you would upload to a storage service
-   * For this demo, we're using a sample image URL
+   * For this implementation, we'll convert the image to a data URL
    */
   async uploadImage(file: File): Promise<string> {
     console.log('Image file selected:', file.name, file.type, file.size);
     
-    // For testing purposes, we'll use a sample image URL from the Replicate documentation
-    const sampleImageUrl = "https://replicate.delivery/pbxt/MJaYRxQMgIzPsALScNadsZFCXR2h1n97xBzhRinmUQw9aw25/ephemeros_a_dune_sandworm_with_black_background_de398ce7-2276-4634-8f1d-c4ed2423cda4.png";
-    
-    console.log('Using sample image URL for testing:', sampleImageUrl);
-    return sampleImageUrl;
+    return new Promise((resolve, reject) => {
+      try {
+        const reader = new FileReader();
+        
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          console.log('Image converted to data URL, length:', dataUrl.length);
+          resolve(dataUrl);
+        };
+        
+        reader.onerror = () => {
+          console.error('Error reading file:', reader.error);
+          reject(new Error('Failed to read image file'));
+        };
+        
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error in uploadImage:', error);
+        reject(error);
+      }
+    });
   }
 
   /**

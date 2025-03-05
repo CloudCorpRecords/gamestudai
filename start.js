@@ -33,7 +33,7 @@ backend.stderr.on('data', (data) => {
 });
 
 // Start frontend
-const frontend = spawn('npm', ['start'], { cwd: __dirname, shell: true });
+const frontend = spawn('npm', ['run', 'dev'], { cwd: __dirname, shell: true });
 
 frontend.stdout.on('data', (data) => {
   console.log('\x1b[34m[Frontend]\x1b[0m', data.toString().trim());

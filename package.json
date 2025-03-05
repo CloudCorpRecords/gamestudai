@@ -3,14 +3,13 @@
   "version": "0.1.0",
   "description": "An open-source AI-assisted 3D game engine for no-code game development",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "setup": "npm install --legacy-peer-deps && npm run dev",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "react-scripts start",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "vite",
     "start:all": "node start.js"
   },
   "dependencies": {
@@ -47,6 +46,5 @@
     "vite": "^4.5.2"
   },
   "author": "",
-  "license": "MIT",
-  "type": "module"
+  "license": "MIT"
 }
