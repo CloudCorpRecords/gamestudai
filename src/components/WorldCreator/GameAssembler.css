@@ -456,4 +456,52 @@
   white-space: nowrap;
   pointer-events: none;
   transform: translateY(-20px);
+}
+
+/* Camera controls help */
+.camera-controls-help {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 100;
+  max-width: 300px;
+  transition: opacity 0.3s ease;
+}
+
+.camera-controls-help.hidden {
+  opacity: 0;
+}
+
+.camera-controls-help h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #4285F4;
+}
+
+.camera-controls-help ul {
+  margin: 0;
+  padding: 0 0 0 16px;
+}
+
+.camera-controls-help li {
+  margin-bottom: 4px;
+}
+
+.camera-controls-help kbd {
+  background-color: #333;
+  border-radius: 3px;
+  border: 1px solid #666;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  display: inline-block;
+  font-size: 11px;
+  line-height: 1;
+  padding: 2px 4px;
+  margin: 0 2px;
 } 

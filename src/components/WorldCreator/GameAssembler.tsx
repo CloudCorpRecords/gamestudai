@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, TransformControls, Grid, Html, useHelper } from '@react-three/drei';
@@ -991,51 +991,197 @@ const GameObjectMesh: React.FC<{
   );
 };
 
+// Custom camera controls component
+const CameraControls: React.FC<{
+  enabled: boolean;
+}> = ({ enabled }) => {
+  const controlsRef = useRef<any>(null);
+  const { camera, gl } = useThree();
+  
+  // Configure controls on mount and when enabled state changes
+  useEffect(() => {
+    if (controlsRef.current) {
+      // Only enable controls when not manipulating objects
+      controlsRef.current.enabled = enabled;
+      
+      // Make camera movement smoother
+      controlsRef.current.enableDamping = true;
+      controlsRef.current.dampingFactor = 0.1;
+      
+      // Set reasonable rotation limits to prevent disorientation
+      controlsRef.current.minPolarAngle = Math.PI * 0.1; // Limit how high you can go
+      controlsRef.current.maxPolarAngle = Math.PI * 0.8; // Limit how low you can go
+      
+      // Adjust zoom limits
+      controlsRef.current.minDistance = 2;
+      controlsRef.current.maxDistance = 50;
+      
+      // Make right-click the orbit control instead of left-click
+      controlsRef.current.mouseButtons = {
+        LEFT: THREE.MOUSE.PAN,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.ROTATE
+      };
+      
+      // Add key bindings for common camera positions
+      const keyDownHandler = (event: KeyboardEvent) => {
+        if (!enabled) return;
+        
+        // Number keys for standard views
+        switch (event.key) {
+          case '1': // Front view
+            camera.position.set(0, 0, 10);
+            controlsRef.current.target.set(0, 0, 0);
+            break;
+          case '2': // Side view
+            camera.position.set(10, 0, 0);
+            controlsRef.current.target.set(0, 0, 0);
+            break;
+          case '3': // Top view
+            camera.position.set(0, 10, 0);
+            controlsRef.current.target.set(0, 0, 0);
+            break;
+          case '7': // Isometric view
+            camera.position.set(7, 7, 7);
+            controlsRef.current.target.set(0, 0, 0);
+            break;
+          case 'f': // Focus on selected object
+            // This would need to be implemented with access to the selected object
+            break;
+        }
+      };
+      
+      window.addEventListener('keydown', keyDownHandler);
+      return () => {
+        window.removeEventListener('keydown', keyDownHandler);
+      };
+    }
+  }, [enabled, camera]);
+  
+  // Update controls on each frame for smooth damping
+  useFrame(() => {
+    if (controlsRef.current) {
+      controlsRef.current.update();
+    }
+  });
+  
+  return <OrbitControls ref={controlsRef} />;
+};
+
+// Add this component after the CameraControls component
+const CameraControlsHelp: React.FC = () => {
+  const [visible, setVisible] = useState(true);
+  
+  // Hide the help after 10 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setVisible(false);
+    }, 10000);
+    
+    // Show help when pressing H key
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'h' || e.key === 'H') {
+        setVisible(prev => !prev);
+      }
+    };
+    
+    window.addEventListener('keydown', keyHandler);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('keydown', keyHandler);
+    };
+  }, []);
+  
+  return (
+    <div className={`camera-controls-help ${visible ? '' : 'hidden'}`}>
+      <h4>Camera Controls</h4>
+      <ul>
+        <li><kbd>Right Click</kbd> + Drag to Orbit</li>
+        <li><kbd>Left Click</kbd> + Drag to Pan</li>
+        <li><kbd>Scroll</kbd> to Zoom</li>
+        <li><kbd>1</kbd> Front View</li>
+        <li><kbd>2</kbd> Side View</li>
+        <li><kbd>3</kbd> Top View</li>
+        <li><kbd>7</kbd> Isometric View</li>
+        <li><kbd>H</kbd> Toggle Help</li>
+      </ul>
+    </div>
+  );
+};
+
 // Transform controls wrapper
 const ObjectTransformControls: React.FC<{
   object: GameObjectInstance;
   mode: 'translate' | 'rotate' | 'scale';
   onUpdate: (updatedObject: GameObjectInstance) => void;
-}> = ({ object, mode, onUpdate }) => {
-  const controlsRef = useRef<any>(null);
-  const { camera, scene } = useThree();
+  onTransformStart: () => void;
+  onTransformEnd: () => void;
+}> = ({ object, mode, onUpdate, onTransformStart, onTransformEnd }) => {
+  const { camera } = useThree();
+  const transformRef = useRef<any>(null);
+  const objectRef = useRef<THREE.Mesh>(null);
   
-  // Create a dummy object to attach the transform controls to
-  const dummyObject = useRef(new THREE.Object3D());
+  // Track the object's position, rotation, and scale
+  const [position, setPosition] = useState<[number, number, number]>(object.position);
+  const [rotation, setRotation] = useState<[number, number, number]>(object.rotation);
+  const [scale, setScale] = useState<[number, number, number]>(object.scale);
   
+  // Update the transform controls when the object changes
   useEffect(() => {
-    // Set the dummy object's transform to match the game object
-    dummyObject.current.position.set(...object.position);
-    dummyObject.current.rotation.set(...object.rotation);
-    dummyObject.current.scale.set(...object.scale);
-    
-    // Add it to the scene
-    scene.add(dummyObject.current);
-    
-    return () => {
-      scene.remove(dummyObject.current);
-    };
-  }, [object, scene]);
+    setPosition(object.position);
+    setRotation(object.rotation);
+    setScale(object.scale);
+  }, [object]);
   
-  // Update the game object when the transform changes
+  // Connect the transform controls to the object
+  useEffect(() => {
+    if (transformRef.current && objectRef.current) {
+      transformRef.current.attach(objectRef.current);
+      
+      // Add event listeners for transform events
+      const onDragStart = () => {
+        onTransformStart();
+      };
+      
+      const onDragEnd = () => {
+        onTransformEnd();
+      };
+      
+      transformRef.current.addEventListener('dragging-changed', (event: { value: boolean }) => {
+        if (event.value) {
+          onDragStart();
+        } else {
+          onDragEnd();
+        }
+      });
+      
+      return () => {
+        transformRef.current?.removeEventListener('dragging-changed', onDragStart);
+        transformRef.current?.removeEventListener('dragging-changed', onDragEnd);
+      };
+    }
+  }, [transformRef, objectRef, onTransformStart, onTransformEnd]);
+  
+  // Update the object when the transform controls change
   useFrame(() => {
-    if (dummyObject.current) {
+    if (objectRef.current) {
       const newPosition: [number, number, number] = [
-        dummyObject.current.position.x,
-        dummyObject.current.position.y,
-        dummyObject.current.position.z
+        objectRef.current.position.x,
+        objectRef.current.position.y,
+        objectRef.current.position.z
       ];
       
       const newRotation: [number, number, number] = [
-        dummyObject.current.rotation.x,
-        dummyObject.current.rotation.y,
-        dummyObject.current.rotation.z
+        objectRef.current.rotation.x,
+        objectRef.current.rotation.y,
+        objectRef.current.rotation.z
       ];
       
       const newScale: [number, number, number] = [
-        dummyObject.current.scale.x,
-        dummyObject.current.scale.y,
-        dummyObject.current.scale.z
+        objectRef.current.scale.x,
+        objectRef.current.scale.y,
+        objectRef.current.scale.z
       ];
       
       // Only update if something changed
@@ -1048,22 +1194,26 @@ const ObjectTransformControls: React.FC<{
           ...object,
           position: newPosition,
           rotation: newRotation,
-          scale: newScale
+          scale: newScale,
         });
       }
     }
   });
   
   return (
-    <TransformControls
-      ref={controlsRef}
-      object={dummyObject.current}
-      mode={mode}
-      size={0.75}
-      showX={true}
-      showY={true}
-      showZ={true}
-    />
+    <>
+      <TransformControls ref={transformRef} mode={mode} />
+      <mesh
+        ref={objectRef}
+        position={[position[0], position[1], position[2]]}
+        rotation={[rotation[0], rotation[1], rotation[2]]}
+        scale={[scale[0], scale[1], scale[2]]}
+        visible={false}
+      >
+        <boxGeometry args={[1, 1, 1]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+    </>
   );
 };
 
@@ -1074,7 +1224,8 @@ const GameScene: React.FC<{
   transformMode: 'translate' | 'rotate' | 'scale';
   onSelectObject: (id: string | null) => void;
   onUpdateObject: (updatedObject: GameObjectInstance) => void;
-}> = ({ objects, selectedObjectId, transformMode, onSelectObject, onUpdateObject }) => {
+  setIsTransforming: (isTransforming: boolean) => void;
+}> = ({ objects, selectedObjectId, transformMode, onSelectObject, onUpdateObject, setIsTransforming }) => {
   // Clear selection when clicking on empty space
   const handleBackgroundClick = () => {
     onSelectObject(null);
@@ -1116,6 +1267,8 @@ const GameScene: React.FC<{
           object={objects.find(obj => obj.id === selectedObjectId)!}
           mode={transformMode}
           onUpdate={onUpdateObject}
+          onTransformStart={() => setIsTransforming(true)}
+          onTransformEnd={() => setIsTransforming(false)}
         />
       )}
     </>
@@ -1132,6 +1285,7 @@ const GameAssembler: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showComponentPanel, setShowComponentPanel] = useState<boolean>(true);
+  const [isTransforming, setIsTransforming] = useState(false);
   
   // Get the selected object
   const selectedObject = selectedObjectId 
@@ -1358,9 +1512,12 @@ const GameAssembler: React.FC = () => {
               transformMode={transformMode}
               onSelectObject={setSelectedObjectId}
               onUpdateObject={handleUpdateObject}
+              setIsTransforming={setIsTransforming}
             />
-            <OrbitControls />
+            <CameraControls enabled={selectedObjectId === null || !isTransforming} />
           </Canvas>
+          
+          <CameraControlsHelp />
           
           {isPlaying && (
             <div className="play-overlay">
