@@ -15,15 +15,20 @@
     "start:direct:local": "node run-direct-local.js"
   },
   "dependencies": {
+    "@gltf-transform/cli": "^4.1.2",
+    "@gltf-transform/core": "^4.1.2",
+    "@gltf-transform/functions": "^4.1.2",
     "@react-three/cannon": "^6.6.0",
     "@react-three/drei": "^9.97.5",
     "@react-three/fiber": "^8.15.17",
+    "@types/uuid": "^10.0.0",
     "axios": "^1.8.1",
     "cannon-es": "^0.20.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "file-saver": "^2.0.5",
+    "gltfjsx": "^6.5.3",
     "leva": "^0.9.35",
     "nanoid": "^5.0.4",
     "openai": "^4.28.4",
@@ -35,6 +40,8 @@
     "replicate": "^1.0.1",
     "simplex-noise": "^4.0.1",
     "three": "^0.150.1",
+    "three-stdlib": "^2.35.14",
+    "uuid": "^11.1.0",
     "zustand": "^4.5.1"
   },
   "devDependencies": {
