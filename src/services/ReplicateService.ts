@@ -53,34 +53,33 @@ class ReplicateService {
    * Get the API key from local storage
    */
   getApiKey(): string | null {
-    const apiKey = localStorage.getItem(this.API_KEY_STORAGE_KEY);
-    console.log('Retrieved API key from storage:', apiKey ? '******' + apiKey.slice(-4) : 'null');
-    return apiKey;
+    // For this implementation, we're using the API key from the server's .env file
+    // So we'll just return a dummy value to indicate it's configured
+    return "configured_on_server";
   }
 
   /**
    * Set the API key in local storage
    */
   setApiKey(key: string) {
-    console.log('Setting API key in storage');
-    localStorage.setItem(this.API_KEY_STORAGE_KEY, key);
+    console.log('API key is configured on the server, no need to set it here');
+    // We're not actually storing the key in localStorage anymore
+    // It's configured in the server's .env file
   }
 
   /**
    * Clear the API key from local storage
    */
   clearApiKey() {
-    console.log('Clearing API key from storage');
-    localStorage.removeItem(this.API_KEY_STORAGE_KEY);
+    console.log('API key is configured on the server, no need to clear it here');
   }
 
   /**
    * Check if the API key is configured
    */
   isConfigured(): boolean {
-    const hasKey = !!this.getApiKey();
-    console.log('API key configured:', hasKey);
-    return hasKey;
+    // We'll assume it's configured on the server
+    return true;
   }
 
   /**
@@ -118,7 +117,10 @@ class ReplicateService {
    */
   async generateModel(input: TrellisModelInput): Promise<string> {
     try {
-      console.log('Generating 3D model with input:', JSON.stringify(input, null, 2));
+      console.log('Generating 3D model with input:', JSON.stringify({
+        ...input,
+        images: input.images.map(img => img.substring(0, 30) + '... [truncated]')
+      }, null, 2));
       
       // Make the API request to our backend server
       const response = await axios.post(`${this.API_BASE_URL}/run`, {
@@ -126,7 +128,7 @@ class ReplicateService {
         input
       });
       
-      console.log('Model generation response:', JSON.stringify(response.data, null, 2));
+      console.log('Model generation response received');
       
       // The backend returns the complete output directly
       const output = response.data.output;
@@ -159,7 +161,7 @@ class ReplicateService {
       const outputStr = localStorage.getItem('lastModelOutput');
       const output = outputStr ? JSON.parse(outputStr) : null;
       
-      console.log('Retrieved model output:', JSON.stringify(output, null, 2));
+      console.log('Retrieved model output:', output ? 'Output found' : 'No output found');
       
       // Create a status object
       return {

@@ -1,23 +1,35 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const Replicate = require('replicate');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import Replicate from 'replicate';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Get current file path
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Load environment variables
 dotenv.config();
 
-// Initialize Express app
-const app = express();
-
-// Middleware
-app.use(cors());
-// Increase JSON payload size limit to 50MB for image data URLs
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
 // Initialize Replicate client
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
+  userAgent: 'GameStudAI'
+});
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Middleware
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
 });
 
 // Test endpoint
@@ -57,9 +69,9 @@ app.post('/api/replicate/run', async (req, res) => {
     }, null, 2));
     
     // Run the model
+    console.log('Running...');
     const output = await replicate.run(version, { input });
-    
-    console.log('Model output:', JSON.stringify(output, null, 2));
+    console.log('Done!', JSON.stringify(output, null, 2));
     
     // Return the output
     return res.json({ output });
@@ -80,7 +92,6 @@ app.post('/api/replicate/run', async (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Replicate API token configured: ${!!process.env.REPLICATE_API_TOKEN}`);
