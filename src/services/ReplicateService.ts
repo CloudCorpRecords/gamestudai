@@ -3,7 +3,7 @@
  * Used for AI-powered 3D model generation
  */
 
-import axios from 'axios';
+import Replicate from 'replicate';
 
 // Interface for Trellis model input parameters
 export interface TrellisModelInput {
@@ -79,12 +79,11 @@ interface ModelGenerationParams {
 
 class ReplicateService {
   private readonly API_KEY_STORAGE_KEY = 'apiKey_replicate';
-  private readonly API_URL = 'https://api.replicate.com/v1/predictions';
-  private readonly DEFAULT_MODEL = 'cjwbw/shap-e:5957069d5c509126a73c7cb68abcddbb985aeefa4d318e7c63ec1352ce6da68c';
   private readonly TRELLIS_MODEL = 'firtoz/trellis:4876f2a8da1c544772dffa32e8889da4a1bab3a1f5c1937bfcfccb99ae347251';
+  private client: Replicate | null = null;
 
   /**
-   * Get the stored API key
+   * Get the API key from local storage
    */
   getApiKey(): string | null {
     const apiKey = localStorage.getItem(this.API_KEY_STORAGE_KEY);
@@ -93,19 +92,22 @@ class ReplicateService {
   }
 
   /**
-   * Set the API key
+   * Set the API key in local storage
    */
   setApiKey(key: string) {
     console.log('Setting API key in storage');
     localStorage.setItem(this.API_KEY_STORAGE_KEY, key);
+    // Reset client when API key changes
+    this.client = null;
   }
 
   /**
-   * Clear the API key
+   * Clear the API key from local storage
    */
   clearApiKey() {
     console.log('Clearing API key from storage');
     localStorage.removeItem(this.API_KEY_STORAGE_KEY);
+    this.client = null;
   }
 
   /**
@@ -117,182 +119,84 @@ class ReplicateService {
     return hasKey;
   }
 
-  // Create headers with authentication
-  private getHeaders() {
-    const apiKey = this.getApiKey();
-    if (!apiKey) {
-      throw new Error('API key not configured');
-    }
-    
-    // Ensure the API key is properly formatted
-    const formattedKey = apiKey.trim();
-    console.log('Creating headers with API key:', '*'.repeat(formattedKey.length - 4) + formattedKey.slice(-4));
-    
-    const headers = {
-      'Authorization': `Bearer ${formattedKey}`,
-      'Content-Type': 'application/json',
-    } as Record<string, string>;
-    
-    return headers;
-  }
-
   /**
-   * Create a new model generation prediction
+   * Get or create the Replicate client
    */
-  async createPrediction(params: ModelGenerationParams): Promise<ReplicateResponse> {
-    if (!this.isConfigured()) {
-      throw new Error('Replicate API key is not configured');
+  private getClient(): Replicate {
+    if (!this.client) {
+      const apiKey = this.getApiKey();
+      if (!apiKey) {
+        throw new Error('API key not configured');
+      }
+      
+      console.log('Creating new Replicate client');
+      this.client = new Replicate({
+        auth: apiKey.trim(),
+      });
     }
-
-    try {
-      const response = await axios.post(
-        this.API_URL,
-        {
-          version: this.DEFAULT_MODEL,
-          input: {
-            prompt: params.prompt,
-            negative_prompt: params.negative_prompt || '',
-            guidance_scale: params.guidance_scale || 7.5,
-            num_inference_steps: params.num_inference_steps || 50,
-            seed: params.seed || Math.floor(Math.random() * 1000000),
-          },
-        },
-        { headers: this.getHeaders() }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error creating prediction:', error);
-      throw error;
-    }
+    return this.client;
   }
 
   /**
-   * Get the status of a prediction
-   */
-  async getPrediction(id: string): Promise<ReplicateResponse> {
-    if (!this.isConfigured()) {
-      throw new Error('Replicate API key is not configured');
-    }
-
-    try {
-      const response = await axios.get(
-        `${this.API_URL}/${id}`,
-        { headers: this.getHeaders() }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error getting prediction:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Cancel a running prediction
-   */
-  async cancelPrediction(id: string): Promise<void> {
-    if (!this.isConfigured()) {
-      throw new Error('Replicate API key is not configured');
-    }
-
-    try {
-      await axios.post(
-        `${this.API_URL}/${id}/cancel`,
-        {},
-        { headers: this.getHeaders() }
-      );
-    } catch (error) {
-      console.error('Error canceling prediction:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Upload an image to a temporary storage and return the URL
+   * Upload an image and return its URL
+   * Note: In a real app, you would upload to a storage service
+   * For this demo, we're using a sample image URL
    */
   async uploadImage(file: File): Promise<string> {
-    // In a production app, you would upload the image to a storage service
-    // and return the URL. For this demo, we'll use a sample image URL
-    // that is known to work with the Replicate API.
     console.log('Image file selected:', file.name, file.type, file.size);
     
     // For testing purposes, we'll use a sample image URL from the Replicate documentation
-    // In a real app, you would upload the image to a storage service like S3 or Cloudinary
     const sampleImageUrl = "https://replicate.delivery/pbxt/MJaYRxQMgIzPsALScNadsZFCXR2h1n97xBzhRinmUQw9aw25/ephemeros_a_dune_sandworm_with_black_background_de398ce7-2276-4634-8f1d-c4ed2423cda4.png";
     
     console.log('Using sample image URL for testing:', sampleImageUrl);
     return sampleImageUrl;
   }
 
-  // Generate a 3D model using Trellis model
+  /**
+   * Generate a 3D model using the Trellis model
+   */
   async generateModel(input: TrellisModelInput): Promise<string> {
     if (!this.isConfigured()) {
       throw new Error('API key not configured');
     }
 
     try {
-      const headers = this.getHeaders();
-      // Add the Prefer header to match the curl example
-      headers['Prefer'] = 'wait';
+      console.log('Generating 3D model with input:', input);
       
-      console.log('Making API request to:', this.API_URL);
-      console.log('With headers:', JSON.stringify(headers, null, 2));
-      console.log('With payload:', JSON.stringify({
+      const client = this.getClient();
+      
+      // Start a prediction
+      const prediction = await client.predictions.create({
         version: this.TRELLIS_MODEL,
-        input
-      }, null, 2));
+        input: input,
+      });
       
-      const response = await axios.post(
-        this.API_URL,
-        {
-          version: this.TRELLIS_MODEL,
-          input
-        },
-        { headers }
-      );
-      
-      console.log('Model generation response:', response.data);
-      return response.data.id;
+      console.log('Model generation started with ID:', prediction.id);
+      return prediction.id;
     } catch (error) {
-      console.error('Error starting model generation:', error);
-      
-      // More detailed error logging
-      if (axios.isAxiosError(error)) {
-        console.error('Axios error details:');
-        console.error('Status:', error.response?.status);
-        console.error('Status text:', error.response?.statusText);
-        console.error('Response data:', error.response?.data);
-        console.error('Request config:', error.config);
-        
-        if (error.response) {
-          throw new Error(`API error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
-        } else if (error.request) {
-          throw new Error('No response received from API server');
-        } else {
-          throw new Error(`Error setting up request: ${error.message}`);
-        }
-      }
-      
+      console.error('Error generating model:', error);
       throw error;
     }
   }
 
-  // Check the status of a model generation job
+  /**
+   * Check the status of a model generation
+   */
   async checkStatus(predictionId: string): Promise<ModelGenerationStatus> {
     try {
       console.log(`Checking status for prediction ${predictionId}`);
-      const response = await axios.get(
-        `${this.API_URL}/${predictionId}`,
-        { headers: this.getHeaders() }
-      );
       
-      console.log('Raw status response:', response.data);
+      const client = this.getClient();
+      const prediction = await client.predictions.get(predictionId);
       
-      // Map the API status to our internal status
+      console.log('Raw prediction status:', prediction);
+      
+      // Map the prediction status to our internal status
       let status: 'starting' | 'processing' | 'succeeded' | 'failed' | 'canceled';
-      switch (response.data.status) {
+      switch (prediction.status) {
         case 'starting':
         case 'processing':
-          status = response.data.status;
+          status = prediction.status;
           break;
         case 'succeeded':
           status = 'succeeded';
@@ -307,14 +211,28 @@ class ReplicateService {
           status = 'processing';
       }
       
+      // Handle the output based on the status
+      let output: TrellisModelOutput | null = null;
+      if (prediction.output && typeof prediction.output === 'object') {
+        output = prediction.output as TrellisModelOutput;
+      }
+      
+      // Handle the error property
+      let errorMessage: string | null = null;
+      if (prediction.error) {
+        errorMessage = typeof prediction.error === 'string' 
+          ? prediction.error 
+          : JSON.stringify(prediction.error);
+      }
+      
       return {
-        id: response.data.id,
+        id: prediction.id,
         status,
-        output: response.data.output || null,
-        error: response.data.error || null,
-        created_at: response.data.created_at,
-        started_at: response.data.started_at,
-        completed_at: response.data.completed_at
+        output,
+        error: errorMessage,
+        created_at: prediction.created_at,
+        started_at: prediction.started_at,
+        completed_at: prediction.completed_at
       };
     } catch (error) {
       console.error('Error checking model status:', error);
@@ -322,21 +240,24 @@ class ReplicateService {
     }
   }
 
-  // Cancel a model generation job
+  /**
+   * Cancel a model generation
+   */
   async cancelGeneration(predictionId: string): Promise<boolean> {
     try {
-      await axios.post(
-        `${this.API_URL}/${predictionId}/cancel`,
-        {},
-        { headers: this.getHeaders() }
-      );
+      console.log(`Canceling prediction ${predictionId}`);
+      
+      const client = this.getClient();
+      await client.predictions.cancel(predictionId);
+      
+      console.log(`Prediction ${predictionId} canceled successfully`);
       return true;
     } catch (error) {
-      console.error('Error canceling model generation:', error);
+      console.error('Error canceling prediction:', error);
       return false;
     }
   }
 }
 
 // Export a singleton instance
-export const replicateService = new ReplicateService(); 
+export default new ReplicateService(); 

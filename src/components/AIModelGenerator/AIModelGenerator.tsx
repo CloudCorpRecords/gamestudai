@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { replicateService, TrellisModelInput, ModelGenerationStatus } from '../../services/ReplicateService';
 import './AIModelGenerator.css';
+import replicateService, { TrellisModelInput, ModelGenerationStatus } from '../../services/ReplicateService';
 
 // Default model generation parameters
 const DEFAULT_PARAMS: Partial<TrellisModelInput> = {
