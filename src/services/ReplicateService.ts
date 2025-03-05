@@ -3,7 +3,7 @@
  * Used for AI-powered 3D model generation
  */
 
-import Replicate from 'replicate';
+import axios from 'axios';
 
 // Interface for Trellis model input parameters
 export interface TrellisModelInput {
@@ -44,43 +44,10 @@ export interface ModelGenerationStatus {
   completed_at?: string;
 }
 
-interface PredictionResponse {
-  id: string;
-  status: string;
-  output: string[] | TrellisModelOutput;
-  completed_at?: string;
-  error?: string;
-  created_at: string;
-  started_at?: string;
-}
-
-interface ReplicateResponse {
-  id: string;
-  version: string;
-  urls: {
-    get: string;
-    cancel: string;
-  };
-  status: string;
-  created_at: string;
-  completed_at?: string;
-  logs?: string;
-  output?: string[];
-  error?: string;
-}
-
-interface ModelGenerationParams {
-  prompt: string;
-  negative_prompt?: string;
-  guidance_scale?: number;
-  num_inference_steps?: number;
-  seed?: number;
-}
-
 class ReplicateService {
   private readonly API_KEY_STORAGE_KEY = 'apiKey_replicate';
   private readonly TRELLIS_MODEL = 'firtoz/trellis:4876f2a8da1c544772dffa32e8889da4a1bab3a1f5c1937bfcfccb99ae347251';
-  private client: Replicate | null = null;
+  private readonly API_BASE_URL = 'http://localhost:3001/api/replicate';
 
   /**
    * Get the API key from local storage
@@ -97,8 +64,6 @@ class ReplicateService {
   setApiKey(key: string) {
     console.log('Setting API key in storage');
     localStorage.setItem(this.API_KEY_STORAGE_KEY, key);
-    // Reset client when API key changes
-    this.client = null;
   }
 
   /**
@@ -107,7 +72,6 @@ class ReplicateService {
   clearApiKey() {
     console.log('Clearing API key from storage');
     localStorage.removeItem(this.API_KEY_STORAGE_KEY);
-    this.client = null;
   }
 
   /**
@@ -117,24 +81,6 @@ class ReplicateService {
     const hasKey = !!this.getApiKey();
     console.log('API key configured:', hasKey);
     return hasKey;
-  }
-
-  /**
-   * Get or create the Replicate client
-   */
-  private getClient(): Replicate {
-    if (!this.client) {
-      const apiKey = this.getApiKey();
-      if (!apiKey) {
-        throw new Error('API key not configured');
-      }
-      
-      console.log('Creating new Replicate client');
-      this.client = new Replicate({
-        auth: apiKey.trim(),
-      });
-    }
-    return this.client;
   }
 
   /**
@@ -163,18 +109,23 @@ class ReplicateService {
     try {
       console.log('Generating 3D model with input:', input);
       
-      const client = this.getClient();
+      const apiKey = this.getApiKey();
       
-      // Start a prediction
-      const prediction = await client.predictions.create({
+      const response = await axios.post(`${this.API_BASE_URL}/predictions`, {
         version: this.TRELLIS_MODEL,
-        input: input,
+        input,
+        apiKey
       });
       
-      console.log('Model generation started with ID:', prediction.id);
-      return prediction.id;
+      console.log('Model generation started with ID:', response.data.id);
+      return response.data.id;
     } catch (error) {
       console.error('Error generating model:', error);
+      
+      if (axios.isAxiosError(error) && error.response) {
+        throw new Error(`API error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      }
+      
       throw error;
     }
   }
@@ -186,17 +137,20 @@ class ReplicateService {
     try {
       console.log(`Checking status for prediction ${predictionId}`);
       
-      const client = this.getClient();
-      const prediction = await client.predictions.get(predictionId);
+      const apiKey = this.getApiKey();
       
-      console.log('Raw prediction status:', prediction);
+      const response = await axios.get(`${this.API_BASE_URL}/predictions/${predictionId}`, {
+        params: { apiKey }
+      });
+      
+      console.log('Raw prediction status:', response.data);
       
       // Map the prediction status to our internal status
       let status: 'starting' | 'processing' | 'succeeded' | 'failed' | 'canceled';
-      switch (prediction.status) {
+      switch (response.data.status) {
         case 'starting':
         case 'processing':
-          status = prediction.status;
+          status = response.data.status;
           break;
         case 'succeeded':
           status = 'succeeded';
@@ -213,26 +167,26 @@ class ReplicateService {
       
       // Handle the output based on the status
       let output: TrellisModelOutput | null = null;
-      if (prediction.output && typeof prediction.output === 'object') {
-        output = prediction.output as TrellisModelOutput;
+      if (response.data.output && typeof response.data.output === 'object') {
+        output = response.data.output as TrellisModelOutput;
       }
       
       // Handle the error property
       let errorMessage: string | null = null;
-      if (prediction.error) {
-        errorMessage = typeof prediction.error === 'string' 
-          ? prediction.error 
-          : JSON.stringify(prediction.error);
+      if (response.data.error) {
+        errorMessage = typeof response.data.error === 'string' 
+          ? response.data.error 
+          : JSON.stringify(response.data.error);
       }
       
       return {
-        id: prediction.id,
+        id: response.data.id,
         status,
         output,
         error: errorMessage,
-        created_at: prediction.created_at,
-        started_at: prediction.started_at,
-        completed_at: prediction.completed_at
+        created_at: response.data.created_at,
+        started_at: response.data.started_at,
+        completed_at: response.data.completed_at
       };
     } catch (error) {
       console.error('Error checking model status:', error);
@@ -247,8 +201,11 @@ class ReplicateService {
     try {
       console.log(`Canceling prediction ${predictionId}`);
       
-      const client = this.getClient();
-      await client.predictions.cancel(predictionId);
+      const apiKey = this.getApiKey();
+      
+      await axios.post(`${this.API_BASE_URL}/predictions/${predictionId}/cancel`, {
+        apiKey
+      });
       
       console.log(`Prediction ${predictionId} canceled successfully`);
       return true;
