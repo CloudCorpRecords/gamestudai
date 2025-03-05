@@ -87,13 +87,16 @@ class ReplicateService {
    * Get the stored API key
    */
   getApiKey(): string | null {
-    return localStorage.getItem(this.API_KEY_STORAGE_KEY);
+    const apiKey = localStorage.getItem(this.API_KEY_STORAGE_KEY);
+    console.log('Retrieved API key from storage:', apiKey ? '******' + apiKey.slice(-4) : 'null');
+    return apiKey;
   }
 
   /**
    * Set the API key
    */
   setApiKey(key: string) {
+    console.log('Setting API key in storage');
     localStorage.setItem(this.API_KEY_STORAGE_KEY, key);
   }
 
@@ -101,6 +104,7 @@ class ReplicateService {
    * Clear the API key
    */
   clearApiKey() {
+    console.log('Clearing API key from storage');
     localStorage.removeItem(this.API_KEY_STORAGE_KEY);
   }
 
@@ -108,7 +112,9 @@ class ReplicateService {
    * Check if the API key is configured
    */
   isConfigured(): boolean {
-    return !!this.getApiKey();
+    const hasKey = !!this.getApiKey();
+    console.log('API key configured:', hasKey);
+    return hasKey;
   }
 
   // Create headers with authentication
@@ -117,10 +123,17 @@ class ReplicateService {
     if (!apiKey) {
       throw new Error('API key not configured');
     }
-    return {
-      'Authorization': `Bearer ${apiKey}`,
+    
+    // Ensure the API key is properly formatted
+    const formattedKey = apiKey.trim();
+    console.log('Creating headers with API key:', '*'.repeat(formattedKey.length - 4) + formattedKey.slice(-4));
+    
+    const headers = {
+      'Authorization': `Bearer ${formattedKey}`,
       'Content-Type': 'application/json',
     } as Record<string, string>;
+    
+    return headers;
   }
 
   /**
@@ -199,27 +212,15 @@ class ReplicateService {
   async uploadImage(file: File): Promise<string> {
     // In a production app, you would upload the image to a storage service
     // and return the URL. For this demo, we'll use a sample image URL
-    // from Replicate's documentation.
+    // that is known to work with the Replicate API.
     console.log('Image file selected:', file.name, file.type, file.size);
     
-    // Return a sample image URL that works with Replicate
-    return "https://replicate.delivery/pbxt/MJaYRxQMgIzPsALScNadsZFCXR2h1n97xBzhRinmUQw9aw25/ephemeros_a_dune_sandworm_with_black_background_de398ce7-2276-4634-8f1d-c4ed2423cda4.png";
+    // For testing purposes, we'll use a sample image URL from the Replicate documentation
+    // In a real app, you would upload the image to a storage service like S3 or Cloudinary
+    const sampleImageUrl = "https://replicate.delivery/pbxt/MJaYRxQMgIzPsALScNadsZFCXR2h1n97xBzhRinmUQw9aw25/ephemeros_a_dune_sandworm_with_black_background_de398ce7-2276-4634-8f1d-c4ed2423cda4.png";
     
-    /* Commented out data URL approach as it might not work with Replicate API
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          // Use the data URL directly
-          resolve(reader.result);
-        } else {
-          reject(new Error('Failed to read image file'));
-        }
-      };
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(file);
-    });
-    */
+    console.log('Using sample image URL for testing:', sampleImageUrl);
+    return sampleImageUrl;
   }
 
   // Generate a 3D model using Trellis model
@@ -232,6 +233,13 @@ class ReplicateService {
       const headers = this.getHeaders();
       // Add the Prefer header to match the curl example
       headers['Prefer'] = 'wait';
+      
+      console.log('Making API request to:', this.API_URL);
+      console.log('With headers:', JSON.stringify(headers, null, 2));
+      console.log('With payload:', JSON.stringify({
+        version: this.TRELLIS_MODEL,
+        input
+      }, null, 2));
       
       const response = await axios.post(
         this.API_URL,
@@ -246,6 +254,24 @@ class ReplicateService {
       return response.data.id;
     } catch (error) {
       console.error('Error starting model generation:', error);
+      
+      // More detailed error logging
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error details:');
+        console.error('Status:', error.response?.status);
+        console.error('Status text:', error.response?.statusText);
+        console.error('Response data:', error.response?.data);
+        console.error('Request config:', error.config);
+        
+        if (error.response) {
+          throw new Error(`API error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+        } else if (error.request) {
+          throw new Error('No response received from API server');
+        } else {
+          throw new Error(`Error setting up request: ${error.message}`);
+        }
+      }
+      
       throw error;
     }
   }

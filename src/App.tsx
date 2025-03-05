@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Editor from './components/Editor';
 import VisualScriptEditor from './components/VisualScripting/VisualScriptEditor';
 import AssetManager from './components/AssetManager/AssetManager';
@@ -24,6 +24,22 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>(AppTab.EDITOR);
   const [showAIAssistant, setShowAIAssistant] = useState<boolean>(false);
   const [aiPrompt, setAiPrompt] = useState<string>("");
+  
+  // Add event listener for navigation events
+  useEffect(() => {
+    const handleNavigation = (event: CustomEvent) => {
+      console.log('Navigation event received:', event.detail);
+      if (event.detail && event.detail.tab) {
+        setActiveTab(event.detail.tab);
+      }
+    };
+
+    window.addEventListener('navigate', handleNavigation as EventListener);
+
+    return () => {
+      window.removeEventListener('navigate', handleNavigation as EventListener);
+    };
+  }, []);
   
   // Handle project name change
   const handleProjectNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {

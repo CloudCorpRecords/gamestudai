@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ApiSettings.css';
+import axios from 'axios';
 
 interface ApiKey {
   name: string;
@@ -21,12 +22,17 @@ const ApiSettings: React.FC = () => {
     }
   ]);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [testMessage, setTestMessage] = useState<string>('');
 
   // Load API keys from localStorage on component mount
   useEffect(() => {
     const loadApiKeys = () => {
+      console.log('Loading API keys from localStorage');
       const savedKeys = apiKeys.map(apiKey => {
-        const savedValue = localStorage.getItem(`apiKey_${apiKey.name}`);
+        const storageKey = `apiKey_${apiKey.name}`;
+        const savedValue = localStorage.getItem(storageKey);
+        console.log(`Loaded ${apiKey.name} API key:`, savedValue ? '******' + savedValue.slice(-4) : 'not set');
         return {
           ...apiKey,
           key: savedValue || ''
@@ -39,6 +45,7 @@ const ApiSettings: React.FC = () => {
   }, []);
 
   const handleApiKeyChange = (name: string, value: string) => {
+    console.log(`Updating ${name} API key`);
     setApiKeys(prevKeys => 
       prevKeys.map(key => 
         key.name === name ? { ...key, key: value } : key
@@ -48,15 +55,19 @@ const ApiSettings: React.FC = () => {
   };
 
   const saveApiKeys = () => {
+    console.log('Saving API keys to localStorage');
     setSaveStatus('saving');
     
     try {
       apiKeys.forEach(apiKey => {
-        localStorage.setItem(`apiKey_${apiKey.name}`, apiKey.key);
+        const storageKey = `apiKey_${apiKey.name}`;
+        console.log(`Saving ${apiKey.name} API key to ${storageKey}`);
+        localStorage.setItem(storageKey, apiKey.key);
       });
       
       setTimeout(() => {
         setSaveStatus('saved');
+        console.log('API keys saved successfully');
         
         // Reset status after 3 seconds
         setTimeout(() => {
@@ -71,8 +82,11 @@ const ApiSettings: React.FC = () => {
 
   const clearApiKeys = () => {
     if (window.confirm('Are you sure you want to clear all API keys?')) {
+      console.log('Clearing all API keys');
       apiKeys.forEach(apiKey => {
-        localStorage.removeItem(`apiKey_${apiKey.name}`);
+        const storageKey = `apiKey_${apiKey.name}`;
+        console.log(`Removing ${apiKey.name} API key from ${storageKey}`);
+        localStorage.removeItem(storageKey);
       });
       
       setApiKeys(prevKeys => 
@@ -80,7 +94,57 @@ const ApiSettings: React.FC = () => {
       );
       
       setSaveStatus('idle');
+      console.log('All API keys cleared');
     }
+  };
+
+  const testReplicateApiKey = async () => {
+    const replicateKey = apiKeys.find(k => k.name === 'replicate')?.key;
+    
+    if (!replicateKey) {
+      setTestMessage('Please enter a Replicate API key first');
+      setTestStatus('error');
+      return;
+    }
+    
+    setTestStatus('testing');
+    setTestMessage('Testing API key...');
+    
+    try {
+      console.log('Testing Replicate API key');
+      const response = await axios.get('https://api.replicate.com/v1/models', {
+        headers: {
+          'Authorization': `Bearer ${replicateKey.trim()}`
+        }
+      });
+      
+      console.log('API test response:', response.status);
+      
+      if (response.status === 200) {
+        setTestStatus('success');
+        setTestMessage('API key is valid!');
+        console.log('API key test successful');
+      } else {
+        setTestStatus('error');
+        setTestMessage(`Unexpected response: ${response.status}`);
+        console.error('API key test failed with status:', response.status);
+      }
+    } catch (error) {
+      console.error('Error testing API key:', error);
+      setTestStatus('error');
+      
+      if (axios.isAxiosError(error) && error.response) {
+        setTestMessage(`API Error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else {
+        setTestMessage('Failed to connect to Replicate API');
+      }
+    }
+    
+    // Reset status after 5 seconds
+    setTimeout(() => {
+      setTestStatus('idle');
+      setTestMessage('');
+    }, 5000);
   };
 
   return (
@@ -121,12 +185,29 @@ const ApiSettings: React.FC = () => {
         </button>
         
         <button 
+          className="test-button"
+          onClick={testReplicateApiKey}
+          disabled={testStatus === 'testing'}
+        >
+          {testStatus === 'idle' && 'Test Replicate API Key'}
+          {testStatus === 'testing' && 'Testing...'}
+          {testStatus === 'success' && 'API Key Valid!'}
+          {testStatus === 'error' && 'API Key Invalid'}
+        </button>
+        
+        <button 
           className="clear-button"
           onClick={clearApiKeys}
         >
           Clear All Keys
         </button>
       </div>
+      
+      {testMessage && (
+        <p className={`test-message ${testStatus === 'error' ? 'error-message' : 'success-message'}`}>
+          {testMessage}
+        </p>
+      )}
       
       {saveStatus === 'error' && (
         <p className="error-message">

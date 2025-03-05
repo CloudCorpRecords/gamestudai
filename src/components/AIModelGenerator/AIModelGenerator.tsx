@@ -35,7 +35,13 @@ const AIModelGenerator: React.FC = () => {
 
   // Check if API is configured on mount
   useEffect(() => {
-    setIsApiConfigured(replicateService.isConfigured());
+    const checkApiConfig = () => {
+      const isConfigured = replicateService.isConfigured();
+      console.log('API configured on mount:', isConfigured);
+      setIsApiConfigured(isConfigured);
+    };
+    
+    checkApiConfig();
   }, []);
   
   // Clean up polling on unmount
@@ -95,12 +101,19 @@ const AIModelGenerator: React.FC = () => {
 
   // Handle model generation
   const handleGenerateModel = async () => {
+    console.log('Generate model button clicked');
+    
+    // Check if API is configured
+    const apiConfigured = replicateService.isConfigured();
+    console.log('API configured:', apiConfigured);
+    
     if (!selectedImage) {
       setGenerationError('Please select an image first');
       return;
     }
     
-    if (!isApiConfigured) {
+    if (!apiConfigured) {
+      console.error('API key not configured');
       setGenerationError('Please configure your Replicate API key in Settings');
       return;
     }
@@ -359,22 +372,41 @@ const AIModelGenerator: React.FC = () => {
     }
   };
 
+  // Render API warning with direct link to settings
+  const renderApiWarning = () => {
+    return (
+      <div className="api-warning">
+        <h3>API Key Required</h3>
+        <p>
+          To use the AI Model Generator, you need to configure your Replicate API key.
+          <br />
+          <a 
+            href="#" 
+            className="settings-link"
+            onClick={(e) => {
+              e.preventDefault();
+              // Navigate to settings tab
+              const event = new CustomEvent('navigate', { 
+                detail: { tab: 'SETTINGS' } 
+              });
+              window.dispatchEvent(event);
+            }}
+          >
+            Go to Settings
+          </a>
+        </p>
+      </div>
+    );
+  };
+
   return (
     <div className="ai-model-generator">
       <div className="generator-header">
-        <h2>AI Model Generator</h2>
+        <h2>AI 3D Model Generator</h2>
         <p>Generate 3D models from images using AI</p>
       </div>
       
-      {!isApiConfigured && (
-        <div className="api-warning">
-          <h3>⚠️ API Key Required</h3>
-          <p>
-            To use the AI Model Generator, you need to configure your Replicate API key.
-            Go to Settings to add your API key.
-          </p>
-        </div>
-      )}
+      {!isApiConfigured && renderApiWarning()}
       
       <div className="generator-content">
         <div className="image-upload-section">
