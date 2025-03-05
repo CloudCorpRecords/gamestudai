@@ -1,16 +1,17 @@
 .script-node {
   width: 240px;
-  background-color: white;
+  background-color: #2a2a3a; /* Dark node background */
   border-radius: 8px;
   border: 2px solid transparent;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transition: all 0.2s;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #e0e0e0; /* Light text for dark background */
 }
 
 .script-node.selected {
-  box-shadow: 0 0 0 2px #1890ff, 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 2px #5a8adb, 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .script-node.collapsed {
@@ -22,32 +23,32 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #3a3a4a;
 }
 
 .event-node .node-header {
-  background-color: #e6f7ff;
-  border-bottom: 1px solid #bae7ff;
+  background-color: #1a3a4a;
+  border-bottom: 1px solid #2a4a5a;
 }
 
 .action-node .node-header {
-  background-color: #f6ffed;
-  border-bottom: 1px solid #d9f7be;
+  background-color: #1a3a2a;
+  border-bottom: 1px solid #2a4a3a;
 }
 
 .condition-node .node-header {
-  background-color: #fff7e6;
-  border-bottom: 1px solid #ffd591;
+  background-color: #3a3a1a;
+  border-bottom: 1px solid #4a4a2a;
 }
 
 .ai-node .node-header {
-  background-color: #f9f0ff;
-  border-bottom: 1px solid #efdbff;
+  background-color: #2a1a3a;
+  border-bottom: 1px solid #3a2a4a;
 }
 
 .math-node .node-header {
-  background-color: #f0f5ff;
-  border-bottom: 1px solid #d6e4ff;
+  background-color: #1a2a3a;
+  border-bottom: 1px solid #2a3a4a;
 }
 
 .node-title {
@@ -56,17 +57,17 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #333;
+  color: #e0e0e0;
 }
 
 .advanced-badge {
   font-size: 10px;
   padding: 2px 6px;
-  background-color: #f9f0ff;
-  color: #722ed1;
+  background-color: #3a2a5a;
+  color: #c4a7ff;
   border-radius: 4px;
   font-weight: normal;
-  border: 1px solid #d3adf7;
+  border: 1px solid #6a4a9a;
 }
 
 .node-controls {
@@ -86,23 +87,24 @@
   justify-content: center;
   border-radius: 4px;
   transition: all 0.2s;
+  color: #aaa;
 }
 
 .node-controls button:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .advanced-toggle.active {
-  color: #722ed1;
+  color: #c4a7ff;
 }
 
 .node-description {
   padding: 8px 12px;
   font-size: 12px;
   line-height: 1.4;
-  color: #666;
-  background-color: #f9f9f9;
-  border-bottom: 1px solid #eee;
+  color: #bbb;
+  background-color: #252535;
+  border-bottom: 1px solid #3a3a4a;
 }
 
 .node-content {
@@ -117,10 +119,11 @@
   height: 28px;
   font-size: 12px;
   transition: background-color 0.2s;
+  color: #ccc;
 }
 
 .port:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .input-port {
@@ -141,16 +144,17 @@
 }
 
 .required-badge {
-  color: #ff4d4f;
+  color: #ff6b6b;
   margin-left: 4px;
   font-weight: bold;
 }
 
 .node-properties {
   padding: 8px 12px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #3a3a4a;
   max-height: 300px;
   overflow-y: auto;
+  background-color: #252535;
 }
 
 .property-row {
@@ -166,7 +170,7 @@
 .property-row label {
   margin-bottom: 4px;
   font-size: 11px;
-  color: #666;
+  color: #aaa;
   display: flex;
   justify-content: space-between;
 }
@@ -175,10 +179,11 @@
 .property-row select,
 .property-row textarea {
   padding: 6px 8px;
-  border: 1px solid #d9d9d9;
+  border: 1px solid #4a4a5a;
   border-radius: 4px;
   font-size: 12px;
-  background-color: #fff;
+  background-color: #303045;
+  color: #e0e0e0;
   transition: all 0.2s;
 }
 
@@ -186,8 +191,8 @@
 .property-row select:focus,
 .property-row textarea:focus {
   outline: none;
-  border-color: #40a9ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  border-color: #5a8adb;
+  box-shadow: 0 0 0 2px rgba(90, 138, 219, 0.3);
 }
 
 /* Checkbox styles */
@@ -196,6 +201,7 @@
   margin-right: 0;
   width: 16px;
   height: 16px;
+  accent-color: #5a8adb;
 }
 
 /* Specialized property rows */
@@ -216,15 +222,18 @@
   flex: 1;
   margin: 0;
   height: 6px;
+  accent-color: #5a8adb;
 }
 
 .slider-value {
   width: 40px;
   text-align: right;
   padding: 2px 4px;
-  border: 1px solid #d9d9d9;
+  border: 1px solid #4a4a5a;
   border-radius: 4px;
   font-size: 12px;
+  background-color: #303045;
+  color: #e0e0e0;
 }
 
 .color-picker-container {
@@ -235,6 +244,7 @@
 
 .color-text {
   flex: 1;
+  color: #e0e0e0;
 }
 
 .vector3-inputs {
