@@ -4,6 +4,8 @@ import VisualScriptEditor from './components/VisualScripting/VisualScriptEditor'
 import AssetManager from './components/AssetManager/AssetManager';
 import WorldCreator from './components/WorldCreator';
 import ModelManager from './components/ModelManager';
+import AIModelGenerator from './components/AIModelGenerator/AIModelGenerator';
+import Settings from './components/Settings/Settings';
 import './styles/App.css';
 
 // App component tabs
@@ -12,7 +14,9 @@ enum AppTab {
   VISUAL_SCRIPTING = 'visual_scripting',
   ASSET_MANAGER = 'asset_manager',
   WORLD_CREATOR = 'world_creator',
-  MODEL_MANAGER = 'model_manager'
+  MODEL_MANAGER = 'model_manager',
+  AI_MODEL_GENERATOR = 'ai_model_generator',
+  SETTINGS = 'settings'
 }
 
 const App: React.FC = () => {
@@ -62,6 +66,10 @@ const App: React.FC = () => {
         return <WorldCreator />;
       case AppTab.MODEL_MANAGER:
         return <ModelManager />;
+      case AppTab.AI_MODEL_GENERATOR:
+        return <AIModelGenerator />;
+      case AppTab.SETTINGS:
+        return <Settings />;
       default:
         return <Editor />;
     }
@@ -118,6 +126,13 @@ const App: React.FC = () => {
           >
             Character Models
           </button>
+          
+          <button 
+            className={`tab ${activeTab === AppTab.AI_MODEL_GENERATOR ? 'active' : ''}`}
+            onClick={() => setActiveTab(AppTab.AI_MODEL_GENERATOR)}
+          >
+            AI Models
+          </button>
         </div>
         
         <div className="top-menu">
@@ -156,6 +171,13 @@ const App: React.FC = () => {
             onClick={handleToggleAI}
           >
             AI Assistant
+          </button>
+          
+          <button 
+            className={`settings-button ${activeTab === AppTab.SETTINGS ? 'active' : ''}`}
+            onClick={() => setActiveTab(AppTab.SETTINGS)}
+          >
+            Settings
           </button>
         </div>
       </header>

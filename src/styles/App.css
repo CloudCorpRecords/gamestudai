@@ -53,7 +53,7 @@
 }
 
 .header-tabs .tab {
-  padding: 0 1.5rem;
+  padding: 0 1rem;
   background: transparent;
   border: none;
   color: #ccc;
@@ -344,4 +344,22 @@
 
 .version {
   color: #888;
+}
+
+/* Settings button */
+.settings-button {
+  background-color: #444 !important;
+  color: white !important;
+  border-radius: 4px !important;
+  padding: 0.25rem 0.75rem !important;
+  font-weight: bold;
+  transition: all 0.2s;
+  margin-left: 0.5rem;
+}
+
+.settings-button:hover, 
+.settings-button.active {
+  background-color: #555 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 } 
