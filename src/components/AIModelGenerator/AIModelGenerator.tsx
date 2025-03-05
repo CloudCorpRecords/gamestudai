@@ -125,7 +125,7 @@ const AIModelGenerator: React.FC = () => {
     try {
       console.log('Starting model generation process...');
       console.log('Selected image:', selectedImage);
-      console.log('Model parameters:', modelParams);
+      console.log('Model parameters:', JSON.stringify(modelParams, null, 2));
       
       // Upload image
       setUploadStatus('uploading');
@@ -134,13 +134,27 @@ const AIModelGenerator: React.FC = () => {
       console.log('Image uploaded successfully:', imageUrl);
       setUploadStatus('success');
       
-      // Start model generation
+      // Prepare input with default values for any missing parameters
       const input: TrellisModelInput = {
-        ...modelParams,
-        images: [imageUrl]
-      } as TrellisModelInput;
+        images: [imageUrl],
+        texture_size: modelParams.texture_size || 2048,
+        mesh_simplify: modelParams.mesh_simplify || 0.9,
+        generate_model: modelParams.generate_model !== undefined ? modelParams.generate_model : true,
+        save_gaussian_ply: modelParams.save_gaussian_ply !== undefined ? modelParams.save_gaussian_ply : true,
+        ss_sampling_steps: modelParams.ss_sampling_steps || 38,
+        seed: modelParams.seed || 0,
+        randomize_seed: modelParams.randomize_seed !== undefined ? modelParams.randomize_seed : true,
+        generate_color: modelParams.generate_color !== undefined ? modelParams.generate_color : true,
+        generate_normal: modelParams.generate_normal !== undefined ? modelParams.generate_normal : false,
+        slat_sampling_steps: modelParams.slat_sampling_steps || 12,
+        return_no_background: modelParams.return_no_background !== undefined ? modelParams.return_no_background : false,
+        ss_guidance_strength: modelParams.ss_guidance_strength || 7.5,
+        slat_guidance_strength: modelParams.slat_guidance_strength || 3
+      };
       
-      console.log('Sending model generation request with input:', input);
+      console.log('Sending model generation request with input:', JSON.stringify(input, null, 2));
+      
+      // Start model generation
       const id = await replicateService.generateModel(input);
       console.log('Model generation started with ID:', id);
       setGenerationId(id);
@@ -165,7 +179,7 @@ const AIModelGenerator: React.FC = () => {
         try {
           console.log('Checking status for generation ID:', id);
           const status = await replicateService.checkStatus(id);
-          console.log('Current generation status:', status);
+          console.log('Current generation status:', JSON.stringify(status, null, 2));
           
           // Only update state if component is still mounted
           if (isMounted) {
@@ -183,7 +197,12 @@ const AIModelGenerator: React.FC = () => {
           if (isMounted) {
             cleanup();
             setIsGenerating(false);
-            setGenerationError('Failed to check generation status');
+            
+            if (error instanceof Error) {
+              setGenerationError(`Failed to check generation status: ${error.message}`);
+            } else {
+              setGenerationError('Failed to check generation status: Unknown error');
+            }
           }
         }
       }, 2000); // Poll every 2 seconds
@@ -193,11 +212,14 @@ const AIModelGenerator: React.FC = () => {
       
     } catch (error) {
       console.error('Error generating model:', error);
+      
+      let errorMessage = 'Failed to generate model: Unknown error';
+      
       if (error instanceof Error) {
-        setGenerationError(`Failed to generate model: ${error.message}`);
-      } else {
-        setGenerationError('Failed to generate model: Unknown error');
+        errorMessage = `Failed to generate model: ${error.message}`;
       }
+      
+      setGenerationError(errorMessage);
       setIsGenerating(false);
       setUploadStatus('error');
     }

@@ -47,7 +47,7 @@ export interface ModelGenerationStatus {
 class ReplicateService {
   private readonly API_KEY_STORAGE_KEY = 'apiKey_replicate';
   private readonly TRELLIS_MODEL = 'firtoz/trellis:4876f2a8da1c544772dffa32e8889da4a1bab3a1f5c1937bfcfccb99ae347251';
-  private readonly API_BASE_URL = 'http://localhost:3001/api/replicate';
+  private readonly API_URL = 'https://api.replicate.com/v1/predictions';
 
   /**
    * Get the API key from local storage
@@ -84,6 +84,21 @@ class ReplicateService {
   }
 
   /**
+   * Get headers for API requests
+   */
+  private getHeaders() {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      throw new Error('API key not configured');
+    }
+    
+    return {
+      'Authorization': `Bearer ${apiKey.trim()}`,
+      'Content-Type': 'application/json',
+    };
+  }
+
+  /**
    * Upload an image and return its URL
    * Note: In a real app, you would upload to a storage service
    * For this demo, we're using a sample image URL
@@ -107,23 +122,47 @@ class ReplicateService {
     }
 
     try {
-      console.log('Generating 3D model with input:', input);
+      console.log('Generating 3D model with input:', JSON.stringify(input, null, 2));
       
-      const apiKey = this.getApiKey();
-      
-      const response = await axios.post(`${this.API_BASE_URL}/predictions`, {
+      // Prepare the request payload
+      const payload = {
         version: this.TRELLIS_MODEL,
-        input,
-        apiKey
-      });
+        input
+      };
       
-      console.log('Model generation started with ID:', response.data.id);
+      console.log('API URL:', this.API_URL);
+      console.log('Request payload:', JSON.stringify(payload, null, 2));
+      console.log('Headers:', JSON.stringify({
+        'Authorization': 'Bearer ****',
+        'Content-Type': 'application/json'
+      }, null, 2));
+      
+      // Make the API request
+      const response = await axios.post(
+        this.API_URL,
+        payload,
+        { headers: this.getHeaders() }
+      );
+      
+      console.log('Model generation response:', JSON.stringify(response.data, null, 2));
+      
       return response.data.id;
     } catch (error) {
       console.error('Error generating model:', error);
       
-      if (axios.isAxiosError(error) && error.response) {
-        throw new Error(`API error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error details:');
+        console.error('Status:', error.response?.status);
+        console.error('Status text:', error.response?.statusText);
+        console.error('Response data:', JSON.stringify(error.response?.data, null, 2));
+        
+        if (error.response) {
+          throw new Error(`API error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+        } else if (error.request) {
+          throw new Error('No response received from API server');
+        } else {
+          throw new Error(`Error setting up request: ${error.message}`);
+        }
       }
       
       throw error;
@@ -137,13 +176,12 @@ class ReplicateService {
     try {
       console.log(`Checking status for prediction ${predictionId}`);
       
-      const apiKey = this.getApiKey();
+      const response = await axios.get(
+        `${this.API_URL}/${predictionId}`,
+        { headers: this.getHeaders() }
+      );
       
-      const response = await axios.get(`${this.API_BASE_URL}/predictions/${predictionId}`, {
-        params: { apiKey }
-      });
-      
-      console.log('Raw prediction status:', response.data);
+      console.log('Raw prediction status:', JSON.stringify(response.data, null, 2));
       
       // Map the prediction status to our internal status
       let status: 'starting' | 'processing' | 'succeeded' | 'failed' | 'canceled';
@@ -190,6 +228,11 @@ class ReplicateService {
       };
     } catch (error) {
       console.error('Error checking model status:', error);
+      
+      if (axios.isAxiosError(error) && error.response) {
+        throw new Error(`API error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      }
+      
       throw error;
     }
   }
@@ -201,11 +244,11 @@ class ReplicateService {
     try {
       console.log(`Canceling prediction ${predictionId}`);
       
-      const apiKey = this.getApiKey();
-      
-      await axios.post(`${this.API_BASE_URL}/predictions/${predictionId}/cancel`, {
-        apiKey
-      });
+      await axios.post(
+        `${this.API_URL}/${predictionId}/cancel`,
+        {},
+        { headers: this.getHeaders() }
+      );
       
       console.log(`Prediction ${predictionId} canceled successfully`);
       return true;
