@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 // Hard-coded API token (replace with your actual token when running locally)
-const API_TOKEN = 'your_replicate_api_token_here';
+const API_TOKEN = process.env.REPLICATE_API_TOKEN || 'REPLACE_WITH_YOUR_API_TOKEN';
 
 // Initialize Replicate client with the token
 const replicate = new Replicate({
