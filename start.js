@@ -21,8 +21,8 @@ if (!fs.existsSync(envFile)) {
 
 console.log('\x1b[36m%s\x1b[0m', '🚀 Starting GameStudAI application...');
 
-// Start backend server
-const backend = spawn('npm', ['run', 'dev'], { cwd: serverDir, shell: true });
+// Start backend server with the token
+const backend = spawn('npm', ['run', 'start:with-token'], { cwd: serverDir, shell: true });
 
 backend.stdout.on('data', (data) => {
   console.log('\x1b[32m[Backend]\x1b[0m', data.toString().trim());
