@@ -1,339 +1,242 @@
 import axios from 'axios';
 
-// Interface for a 3D model from a repository
 export interface RepositoryModel {
   id: string;
   name: string;
-  description?: string;
-  thumbnail: string;
-  url: string;
-  author?: string;
-  license?: string;
-  tags?: string[];
-  source: string;
-  format?: string;
-  vertexCount?: number;
-  faceCount?: number;
+  description: string;
+  thumbnailUrl: string;
+  modelUrl: string;
+  format: string;
+  category: string;
+  tags: string[];
+  author: string;
+  dateCreated: string;
+  dateModified: string;
+  license: string;
+  fileSize: number;
+  polyCount?: number;
+  isAnimated: boolean;
+  isRigged: boolean;
 }
 
-// Interface for search options
-export interface ModelSearchOptions {
-  query: string;
+export interface ModelCategory {
+  id: string;
+  name: string;
+  description: string;
+  count: number;
+}
+
+export interface ModelSearchParams {
+  query?: string;
   category?: string;
-  maxResults?: number;
-  page?: number;
+  tags?: string[];
+  author?: string;
+  isAnimated?: boolean;
+  isRigged?: boolean;
+  sortBy?: 'name' | 'dateCreated' | 'dateModified' | 'fileSize' | 'polyCount';
+  sortDirection?: 'asc' | 'desc';
+  limit?: number;
+  offset?: number;
+}
+
+export interface ModelSearchResult {
+  models: RepositoryModel[];
+  total: number;
 }
 
 export class ModelRepositoryService {
   private static instance: ModelRepositoryService;
-  private modelLoaderService: typeof import('./ModelLoaderService').ModelLoaderService;
+  private apiUrl: string;
+  private categories: ModelCategory[] = [];
+  private models: Map<string, RepositoryModel> = new Map();
   
-  private constructor() {
-    this.modelLoaderService = require('./ModelLoaderService').ModelLoaderService.getInstance();
+  constructor(apiUrl = '/api/models') {
+    this.apiUrl = apiUrl;
+    
+    // Pre-populate with some example categories
+    this.categories = [
+      { id: 'characters', name: 'Characters', description: 'Humanoid and creature models', count: 42 },
+      { id: 'environments', name: 'Environments', description: 'Landscapes, buildings and scenes', count: 29 },
+      { id: 'props', name: 'Props', description: 'Objects and items', count: 78 },
+      { id: 'vehicles', name: 'Vehicles', description: 'Cars, ships and other transportation', count: 15 },
+      { id: 'weapons', name: 'Weapons', description: 'Weapons and combat items', count: 22 }
+    ];
   }
-  
+
+  /**
+   * Get the singleton instance
+   */
   public static getInstance(): ModelRepositoryService {
     if (!ModelRepositoryService.instance) {
       ModelRepositoryService.instance = new ModelRepositoryService();
     }
     return ModelRepositoryService.instance;
   }
-  
+
   /**
-   * Search for models in various repositories
-   * @param query Search query
-   * @returns Promise with search results
+   * Get a list of all model categories
    */
-  public async searchModels(query: string): Promise<RepositoryModel[]> {
+  async getCategories(): Promise<ModelCategory[]> {
     try {
-      // Search in multiple repositories
-      const [sketchfabResults, threedResults, googleResults] = await Promise.all([
-        this.searchSketchfab(query),
-        this.searchThreed(query),
-        this.searchGoogle(query)
-      ]);
+      // In a real implementation, this would fetch from the API
+      // const response = await axios.get(`${this.apiUrl}/categories`);
+      // return response.data.categories;
       
-      // Combine and return results
-      return [...sketchfabResults, ...threedResults, ...googleResults];
+      // Return mock data for now
+      return this.categories;
     } catch (error) {
-      console.error('Error searching models:', error);
-      throw new Error(`Failed to search models: ${error}`);
+      console.error('Error fetching model categories:', error);
+      return this.categories; // Fallback to mock data on error
     }
   }
-  
+
   /**
-   * Search for models on Sketchfab
-   * @param query Search query
-   * @returns Promise with search results
+   * Search for models with filters
    */
-  private async searchSketchfab(query: string): Promise<RepositoryModel[]> {
+  async searchModels(params: ModelSearchParams = {}): Promise<ModelSearchResult> {
     try {
-      // This is a mock implementation
-      // In a real application, you would call the Sketchfab API
+      // In a real implementation, this would fetch from the API
+      // const response = await axios.get(`${this.apiUrl}/search`, { params });
+      // return response.data;
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Generate mock data for development
+      const mockModels: RepositoryModel[] = [];
       
-      // Return mock results
-      return [
-        {
-          id: 'sf1',
-          name: 'Robot Character (GLB)',
-          description: 'A detailed robot character model',
-          thumbnail: 'https://picsum.photos/seed/sf1/300/200',
-          url: 'https://example.com/models/robot.glb',
-          author: 'Sketchfab Artist',
-          license: 'CC BY 4.0',
-          tags: ['character', 'robot', 'sci-fi', 'glb'],
-          source: 'Sketchfab',
-          format: 'GLB',
-          vertexCount: 12500,
-          faceCount: 8200
-        },
-        {
-          id: 'sf2',
-          name: 'Fantasy Sword (FBX)',
-          description: 'A fantasy sword with detailed textures',
-          thumbnail: 'https://picsum.photos/seed/sf2/300/200',
-          url: 'https://example.com/models/sword.fbx',
-          author: 'Sketchfab Artist',
-          license: 'CC BY-NC 4.0',
-          tags: ['weapon', 'sword', 'fantasy', 'fbx'],
-          source: 'Sketchfab',
-          format: 'FBX',
-          vertexCount: 8700,
-          faceCount: 5400
-        },
-        {
-          id: 'sf3',
-          name: 'Sci-Fi Helmet (OBJ)',
-          description: 'A futuristic helmet model',
-          thumbnail: 'https://picsum.photos/seed/sf3/300/200',
-          url: 'https://example.com/models/helmet.obj',
-          author: 'Sketchfab Artist',
-          license: 'CC BY 4.0',
-          tags: ['helmet', 'sci-fi', 'armor', 'obj'],
-          source: 'Sketchfab',
-          format: 'OBJ',
-          vertexCount: 15200,
-          faceCount: 9800
-        }
-      ].filter(model => 
-        model.name.toLowerCase().includes(query.toLowerCase()) || 
-        model.description?.toLowerCase().includes(query.toLowerCase()) ||
-        model.tags?.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-      );
-    } catch (error) {
-      console.error('Error searching Sketchfab:', error);
-      return [];
-    }
-  }
-  
-  /**
-   * Search for models on 3D Warehouse
-   * @param query Search query
-   * @returns Promise with search results
-   */
-  private async searchThreed(query: string): Promise<RepositoryModel[]> {
-    try {
-      // This is a mock implementation
-      // In a real application, you would call the 3D Warehouse API
+      // Number of models to generate (respecting limit)
+      const count = params.limit || 20;
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 700));
+      for (let i = 0; i < count; i++) {
+        const category = params.category || this.getRandomCategory();
+        const id = `model-${category}-${i}`;
+        
+        mockModels.push({
+          id,
+          name: `${this.capitalizeFirstLetter(category)} Model ${i + 1}`,
+          description: `A sample ${category} model for testing purposes.`,
+          thumbnailUrl: `/mock-assets/thumbnails/${category}${i % 5 + 1}.jpg`,
+          modelUrl: `/mock-assets/models/${category}${i % 3 + 1}.glb`,
+          format: 'glb',
+          category,
+          tags: this.getRandomTags(category),
+          author: this.getRandomAuthor(),
+          dateCreated: this.getRandomDate(2021, 2022),
+          dateModified: this.getRandomDate(2022, 2023),
+          license: 'CC-BY-4.0',
+          fileSize: Math.floor(Math.random() * 50000) + 1000,
+          polyCount: Math.floor(Math.random() * 20000) + 1000,
+          isAnimated: Math.random() > 0.5,
+          isRigged: Math.random() > 0.3
+        });
+        
+        // Cache the model
+        this.models.set(id, mockModels[i]);
+      }
       
-      // Return mock results
-      return [
-        {
-          id: '3d1',
-          name: 'Modern Chair (DAE)',
-          description: 'A modern chair design',
-          thumbnail: 'https://picsum.photos/seed/3d1/300/200',
-          url: 'https://example.com/models/chair.dae',
-          author: '3D Warehouse Creator',
-          license: 'Standard',
-          tags: ['furniture', 'chair', 'modern', 'dae'],
-          source: '3D Warehouse',
-          format: 'DAE',
-          vertexCount: 6200,
-          faceCount: 4100
-        },
-        {
-          id: '3d2',
-          name: 'City Building (PLY)',
-          description: 'A detailed city building model',
-          thumbnail: 'https://picsum.photos/seed/3d2/300/200',
-          url: 'https://example.com/models/building.ply',
-          author: '3D Warehouse Creator',
-          license: 'Standard',
-          tags: ['architecture', 'building', 'city', 'ply'],
-          source: '3D Warehouse',
-          format: 'PLY',
-          vertexCount: 28500,
-          faceCount: 18700
-        },
-        {
-          id: '3d3',
-          name: 'Sports Car (STL)',
-          description: 'A detailed sports car model',
-          thumbnail: 'https://picsum.photos/seed/3d3/300/200',
-          url: 'https://example.com/models/car.stl',
-          author: '3D Warehouse Creator',
-          license: 'Standard',
-          tags: ['vehicle', 'car', 'sports', 'stl'],
-          source: '3D Warehouse',
-          format: 'STL',
-          vertexCount: 32100,
-          faceCount: 21400
-        }
-      ].filter(model => 
-        model.name.toLowerCase().includes(query.toLowerCase()) || 
-        model.description?.toLowerCase().includes(query.toLowerCase()) ||
-        model.tags?.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-      );
-    } catch (error) {
-      console.error('Error searching 3D Warehouse:', error);
-      return [];
-    }
-  }
-  
-  /**
-   * Search for models on Google Poly
-   * @param query Search query
-   * @returns Promise with search results
-   */
-  private async searchGoogle(query: string): Promise<RepositoryModel[]> {
-    try {
-      // This is a mock implementation
-      // In a real application, you would call the Google Poly API
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 600));
-      
-      // Return mock results
-      return [
-        {
-          id: 'gp1',
-          name: 'Low Poly Tree (GLTF)',
-          description: 'A low poly tree model',
-          thumbnail: 'https://picsum.photos/seed/gp1/300/200',
-          url: 'https://example.com/models/tree.gltf',
-          author: 'Google Creator',
-          license: 'CC BY 4.0',
-          tags: ['nature', 'tree', 'low-poly', 'gltf'],
-          source: 'Google',
-          format: 'GLTF',
-          vertexCount: 1200,
-          faceCount: 800
-        },
-        {
-          id: 'gp2',
-          name: 'Cartoon Character (PBN)',
-          description: 'A cartoon character with point-based normals',
-          thumbnail: 'https://picsum.photos/seed/gp2/300/200',
-          url: 'https://example.com/models/character.pbn',
-          author: 'Google Creator',
-          license: 'CC BY 4.0',
-          tags: ['character', 'cartoon', 'animation', 'pbn'],
-          source: 'Google',
-          format: 'PBN',
-          vertexCount: 9500,
-          faceCount: 6300
-        },
-        {
-          id: 'gp3',
-          name: 'Vintage Camera (3DS)',
-          description: 'A detailed vintage camera model',
-          thumbnail: 'https://picsum.photos/seed/gp3/300/200',
-          url: 'https://example.com/models/camera.3ds',
-          author: 'Google Creator',
-          license: 'CC BY 4.0',
-          tags: ['camera', 'vintage', 'electronics', '3ds'],
-          source: 'Google',
-          format: '3DS',
-          vertexCount: 7800,
-          faceCount: 5100
-        }
-      ].filter(model => 
-        model.name.toLowerCase().includes(query.toLowerCase()) || 
-        model.description?.toLowerCase().includes(query.toLowerCase()) ||
-        model.tags?.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-      );
-    } catch (error) {
-      console.error('Error searching Google Poly:', error);
-      return [];
-    }
-  }
-  
-  /**
-   * Import a model from a repository
-   * @param modelId The ID of the model to import
-   * @returns Promise with the imported model data
-   */
-  public async importModel(modelId: string): Promise<any> {
-    try {
-      // In a real application, you would download the model from the repository
-      // For this example, we'll just return a mock result
-      
-      // Simulate download delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Return mock result
       return {
-        success: true,
-        message: `Model ${modelId} imported successfully`,
-        model: {
-          id: modelId,
-          name: `Imported Model ${modelId}`,
-          url: `https://example.com/models/${modelId}.glb`
-        }
+        models: mockModels,
+        total: 100 // Mock total count
       };
     } catch (error) {
-      console.error('Error importing model:', error);
-      throw new Error(`Failed to import model: ${error}`);
+      console.error('Error searching models:', error);
+      // Return empty result on error
+      return { models: [], total: 0 };
     }
   }
-  
+
   /**
-   * Get supported file formats
-   * @returns Array of supported file formats
+   * Get a specific model by ID
    */
-  public getSupportedFormats(): string[] {
-    return [
-      'GLB', 'GLTF', 'FBX', 'OBJ', 'STL', 'DAE', 'PLY', 'PBN', '3DS', 'USDZ', 'WRL', 'VRML'
-    ];
-  }
-  
-  /**
-   * Filter models by format
-   * @param models Array of models to filter
-   * @param format Format to filter by
-   * @returns Filtered array of models
-   */
-  public filterModelsByFormat(models: RepositoryModel[], format: string): RepositoryModel[] {
-    if (format === 'all') {
-      return models;
+  async getModelById(id: string): Promise<RepositoryModel | null> {
+    // Check cache first
+    if (this.models.has(id)) {
+      return this.models.get(id)!;
     }
     
-    return models.filter(model => {
-      // Check if format is in name
-      if (model.name.toLowerCase().includes(format.toLowerCase())) {
-        return true;
-      }
+    try {
+      // In a real implementation, this would fetch from the API
+      // const response = await axios.get(`${this.apiUrl}/${id}`);
+      // return response.data;
       
-      // Check if format is in tags
-      if (model.tags?.some(tag => tag.toLowerCase() === format.toLowerCase())) {
-        return true;
-      }
+      // Generate a mock model if not in cache
+      const category = this.getRandomCategory();
       
-      // Check if format property matches
-      if (model.format?.toLowerCase() === format.toLowerCase()) {
-        return true;
-      }
+      const model: RepositoryModel = {
+        id,
+        name: `${this.capitalizeFirstLetter(category)} Model`,
+        description: `A sample ${category} model for testing purposes.`,
+        thumbnailUrl: `/mock-assets/thumbnails/${category}${Math.floor(Math.random() * 5) + 1}.jpg`,
+        modelUrl: `/mock-assets/models/${category}${Math.floor(Math.random() * 3) + 1}.glb`,
+        format: 'glb',
+        category,
+        tags: this.getRandomTags(category),
+        author: this.getRandomAuthor(),
+        dateCreated: this.getRandomDate(2021, 2022),
+        dateModified: this.getRandomDate(2022, 2023),
+        license: 'CC-BY-4.0',
+        fileSize: Math.floor(Math.random() * 50000) + 1000,
+        polyCount: Math.floor(Math.random() * 20000) + 1000,
+        isAnimated: Math.random() > 0.5,
+        isRigged: Math.random() > 0.3
+      };
       
-      return false;
-    });
+      // Cache the model
+      this.models.set(id, model);
+      
+      return model;
+    } catch (error) {
+      console.error(`Error fetching model with ID ${id}:`, error);
+      return null;
+    }
   }
-}
 
-export default new ModelRepositoryService(); 
+  // Helper methods for generating mock data
+  private getRandomCategory(): string {
+    const categories = this.categories.map(c => c.id);
+    return categories[Math.floor(Math.random() * categories.length)];
+  }
+  
+  private getRandomTags(category: string): string[] {
+    const tagsByCategory: Record<string, string[]> = {
+      'characters': ['fantasy', 'sci-fi', 'human', 'monster', 'npc', 'player', 'animated'],
+      'environments': ['forest', 'city', 'dungeon', 'space', 'indoor', 'outdoor', 'medieval', 'modern'],
+      'props': ['furniture', 'container', 'decoration', 'interactive', 'collectible'],
+      'vehicles': ['car', 'spaceship', 'boat', 'flying', 'ground', 'military', 'civilian'],
+      'weapons': ['sword', 'gun', 'magic', 'melee', 'ranged', 'explosive', 'legendary']
+    };
+    
+    const possibleTags = tagsByCategory[category] || ['game', 'asset', '3d', 'model'];
+    const numTags = Math.floor(Math.random() * 4) + 1;
+    const selectedTags: string[] = [];
+    
+    for (let i = 0; i < numTags; i++) {
+      const tag = possibleTags[Math.floor(Math.random() * possibleTags.length)];
+      if (!selectedTags.includes(tag)) {
+        selectedTags.push(tag);
+      }
+    }
+    
+    return selectedTags;
+  }
+  
+  private getRandomAuthor(): string {
+    const authors = [
+      'GameStudio AI', 
+      'ModelMaster', 
+      'ArtificialArtist', 
+      'VirtualSculptor', 
+      '3DCreator'
+    ];
+    return authors[Math.floor(Math.random() * authors.length)];
+  }
+  
+  private getRandomDate(startYear: number, endYear: number): string {
+    const start = new Date(startYear, 0, 1).getTime();
+    const end = new Date(endYear, 11, 31).getTime();
+    const date = new Date(start + Math.random() * (end - start));
+    return date.toISOString();
+  }
+  
+  private capitalizeFirstLetter(string: string): string {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+} 
