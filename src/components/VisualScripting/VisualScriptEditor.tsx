@@ -696,7 +696,7 @@ const VisualScriptEditorContent: React.FC = () => {
   
   // Add function to connect nodes from the assistant
   const connectNodesFromAssistant = (fromId: string, toId: string) => {
-    console.log(`Attempting to connect nodes: ${fromId} -> ${toId}`);
+    console.log(`*** CONNECTING NODES: ${fromId} → ${toId} ***`);
     
     // Validate IDs
     if (!fromId || !toId) {
@@ -708,42 +708,32 @@ const VisualScriptEditorContent: React.FC = () => {
     const toNode = nodes.find(node => node.id === toId);
     
     if (!fromNode || !toNode) {
-      console.error(`Cannot find nodes: ${fromId} -> ${toId}`);
-      console.log("Available nodes:", nodes.map(n => ({ id: n.id, label: n.data.label })));
+      console.error(`Cannot find nodes to connect: ${fromId} → ${toId}`);
+      console.log("Current nodes:", nodes.map(n => ({ id: n.id, type: n.type, label: n.data?.label })));
       return;
     }
     
     console.log("Found nodes to connect:", {
-      fromNode: { id: fromNode.id, label: fromNode.data.label },
-      toNode: { id: toNode.id, label: toNode.data.label }
+      fromNode: { id: fromNode.id, type: fromNode.type, label: fromNode.data?.label },
+      toNode: { id: toNode.id, type: toNode.type, label: toNode.data?.label }
     });
     
-    // Determine which handles to connect
-    let sourceHandle = null; // Use null for default handle
-    let targetHandle = null; // Use null for default handle
-    
-    // For "Branch" nodes, use the "true" output by default
-    if (fromNode.data.label === 'Branch') {
-      sourceHandle = 'true';
-    }
-    
-    // Create the edge definition
-    const newEdge: Edge = {
-      id: `e${fromId}-${toId}`,
+    // Create a direct edge
+    const edge: Edge = {
+      id: `e-${fromId}-${toId}`,
       source: fromId,
       target: toId,
-      sourceHandle,
-      targetHandle,
-      animated: true, // Make edges animated for better visibility
+      type: 'default', // Use default edge type
+      animated: true,  // Make edges animated for better visibility
     };
     
-    console.log("Creating edge:", newEdge);
+    console.log("Creating edge:", edge);
     
-    // Add the edge to the flow
-    setEdges((eds) => {
-      const updatedEdges = addEdge(newEdge, eds);
-      console.log("Updated edges:", updatedEdges);
-      return updatedEdges;
+    // Add the edge directly to the edges state
+    setEdges(prev => {
+      const newEdges = [...prev, edge];
+      console.log("New edges state:", newEdges);
+      return newEdges;
     });
     
     // Mark as modified
