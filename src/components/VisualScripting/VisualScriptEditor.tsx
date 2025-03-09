@@ -14,6 +14,7 @@ import ReactFlow, {
   Panel,
   applyNodeChanges,
   applyEdgeChanges,
+  MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { nanoid } from 'nanoid';
@@ -42,12 +43,45 @@ import ScriptingAssistant from './ScriptingAssistant';
 declare global {
   interface Window {
     createdNodes?: string[];
+    pendingConnections?: Array<{fromId: string, toId: string}>;
   }
 }
 
 // Define node types for ReactFlow
 const nodeTypes = {
   scriptNode: ScriptNode,
+};
+
+// Define custom edge styles with animated arrows
+const edgeStyles = {
+  default: {
+    stroke: '#6366f1', // Indigo color
+    strokeWidth: 2,
+    animated: true,
+  },
+  success: {
+    stroke: '#22c55e', // Green color
+    strokeWidth: 3,
+    animated: true,
+  },
+  warning: {
+    stroke: '#f97316', // Orange color
+    strokeWidth: 2,
+    animated: true,
+  },
+};
+
+// Custom edge type with animations and arrows
+const defaultEdgeOptions = {
+  type: 'default',
+  animated: true,
+  style: edgeStyles.default,
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    width: 20,
+    height: 20,
+    color: '#6366f1',
+  },
 };
 
 // Initial examples of nodes and edges
@@ -325,6 +359,48 @@ const VisualScriptEditorContent: React.FC = () => {
   
   // Add state for showing/hiding the scripting assistant
   const [showScriptingAssistant, setShowScriptingAssistant] = useState<boolean>(false);
+  
+  // Process connections queue
+  useEffect(() => {
+    // Check for pending connections every 500ms
+    const intervalId = setInterval(() => {
+      if (window.pendingConnections && window.pendingConnections.length > 0) {
+        console.log("Processing pending connections...", window.pendingConnections);
+        
+        // Get the first pending connection
+        const connection = window.pendingConnections.shift();
+        if (connection) {
+          const { fromId, toId } = connection;
+          
+          // Create a direct edge with custom styling
+          const edge: Edge = {
+            id: `e-${fromId}-${toId}-${Date.now()}`,
+            source: fromId,
+            target: toId,
+            type: 'smoothstep',
+            animated: true,
+            style: {
+              stroke: '#6366f1',
+              strokeWidth: 3,
+            },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              width: 20,
+              height: 20,
+              color: '#6366f1',
+            },
+          };
+          
+          console.log("Creating edge:", edge);
+          
+          // Add the edge directly to the edges state
+          setEdges(prev => [...prev, edge]);
+        }
+      }
+    }, 500);
+    
+    return () => clearInterval(intervalId);
+  }, [setEdges]);
   
   // Update the selected node when node selection changes
   useEffect(() => {
@@ -704,40 +780,17 @@ const VisualScriptEditorContent: React.FC = () => {
       return;
     }
     
-    const fromNode = nodes.find(node => node.id === fromId);
-    const toNode = nodes.find(node => node.id === toId);
-    
-    if (!fromNode || !toNode) {
-      console.error(`Cannot find nodes to connect: ${fromId} → ${toId}`);
-      console.log("Current nodes:", nodes.map(n => ({ id: n.id, type: n.type, label: n.data?.label })));
-      return;
+    // Initialize pending connections if needed
+    if (!window.pendingConnections) {
+      window.pendingConnections = [];
     }
     
-    console.log("Found nodes to connect:", {
-      fromNode: { id: fromNode.id, type: fromNode.type, label: fromNode.data?.label },
-      toNode: { id: toNode.id, type: toNode.type, label: toNode.data?.label }
-    });
+    // Add this connection to the pending queue
+    window.pendingConnections.push({ fromId, toId });
+    console.log("Added connection to queue:", { fromId, toId });
+    console.log("Queue length:", window.pendingConnections.length);
     
-    // Create a direct edge
-    const edge: Edge = {
-      id: `e-${fromId}-${toId}`,
-      source: fromId,
-      target: toId,
-      type: 'default', // Use default edge type
-      animated: true,  // Make edges animated for better visibility
-    };
-    
-    console.log("Creating edge:", edge);
-    
-    // Add the edge directly to the edges state
-    setEdges(prev => {
-      const newEdges = [...prev, edge];
-      console.log("New edges state:", newEdges);
-      return newEdges;
-    });
-    
-    // Mark as modified
-    setIsModified(true);
+    // The connection will be processed by the interval in the useEffect
   };
   
   // Toggle the scripting assistant visibility

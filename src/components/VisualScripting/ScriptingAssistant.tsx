@@ -5,6 +5,7 @@ import './ScriptingAssistant.css';
 declare global {
   interface Window {
     createdNodes?: string[];
+    pendingConnections?: Array<{fromId: string, toId: string}>;
   }
 }
 
@@ -216,6 +217,13 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
         window.createdNodes = [];
       }
       
+      // Initialize or clear pending connections
+      if (!window.pendingConnections) {
+        window.pendingConnections = [];
+      } else {
+        window.pendingConnections = [];
+      }
+      
       // Create a map of template node types to indexes
       const nodeTypeToIndexMap: {[key: string]: number} = {};
       
@@ -240,8 +248,8 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
         console.log("Created node IDs for template:", createdNodeIds);
         
         if (createdNodeIds.length >= 2 && connections.length > 0) {
-          // Create each connection with a delay
-          connections.forEach((connection: any, index) => {
+          // Queue each connection with the connection handler
+          connections.forEach((connection: any) => {
             // Find the corresponding node indexes
             const fromIndex = nodeTypeToIndexMap[connection.from];
             const toIndex = nodeTypeToIndexMap[connection.to];
@@ -249,27 +257,24 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
             if (fromIndex !== undefined && toIndex !== undefined && 
                 fromIndex < createdNodeIds.length && toIndex < createdNodeIds.length) {
               
-              // Schedule the connection with a delay
-              setTimeout(() => {
-                const fromId = createdNodeIds[fromIndex];
-                const toId = createdNodeIds[toIndex];
-                console.log(`Connecting template nodes: ${connection.from}(${fromId}) → ${connection.to}(${toId})`);
-                onConnectNodes(fromId, toId);
-              }, index * 500); // Longer delay for reliability
+              const fromId = createdNodeIds[fromIndex];
+              const toId = createdNodeIds[toIndex];
+              console.log(`Queueing template connection: ${connection.from}(${fromId}) → ${connection.to}(${toId})`);
+              
+              // Add to the pending connections queue via the connection handler
+              onConnectNodes(fromId, toId);
             }
           });
           
-          // Send success message after all connections should be done
-          setTimeout(() => {
-            setMessages(prev => [
-              ...prev,
-              {
-                text: `The ${templateName.replace('_', ' ')} template has been created! All nodes have been placed and connected in the editor. Would you like me to explain what each node does?`,
-                sender: 'assistant',
-                timestamp: new Date()
-              }
-            ]);
-          }, connections.length * 500 + 500);
+          // Send success message after all connections are queued
+          setMessages(prev => [
+            ...prev,
+            {
+              text: `The ${templateName.replace('_', ' ')} template has been created! All nodes have been placed and connected in the editor. Would you like me to explain what each node does?`,
+              sender: 'assistant',
+              timestamp: new Date()
+            }
+          ]);
         } else {
           // Just place the nodes without connections
           setMessages(prev => [
@@ -281,7 +286,7 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
             }
           ]);
         }
-      }, 3000); // Longer timeout for node creation
+      }, 2000); // Shorter timeout since we're just queueing connections
     } catch (error) {
       console.error("Error creating template:", templateName, error);
       setMessages(prev => [
@@ -366,43 +371,46 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
         window.createdNodes = [];
       }
       
+      // Initialize or clear pending connections
+      if (!window.pendingConnections) {
+        window.pendingConnections = [];
+      } else {
+        window.pendingConnections = [];
+      }
+      
       // First, create all the nodes
       console.log("Creating nodes for game start script");
       nodeTypes.forEach((nodeType, index) => {
         onCreateNode(nodeType, positions[index]);
       });
       
-      // Then wait for a longer time before attempting to connect
+      // Then wait for a shorter time before attempting to connect
       setTimeout(() => {
         // Force refresh of our access to the created nodes
         const createdNodeIds = [...(window.createdNodes || [])];
-        console.log("Attempting to connect nodes with IDs:", createdNodeIds);
+        console.log("Node IDs created:", createdNodeIds);
         
         if (createdNodeIds.length >= 2) {
-          // Just connect sequential nodes directly
+          // Queue up all connections to be made
           for (let i = 0; i < createdNodeIds.length - 1; i++) {
-            // Create direct connection
             const fromId = createdNodeIds[i];
             const toId = createdNodeIds[i + 1];
-            console.log(`Connecting node ${i} to ${i+1}: ${fromId} → ${toId}`);
+            console.log(`Queueing connection from ${i} to ${i+1}: ${fromId} → ${toId}`);
             
-            // Directly call onConnectNodes with slight delays
-            setTimeout(() => {
-              onConnectNodes(fromId, toId);
-            }, i * 500); // Longer delay between connections
+            // Add to the pending connections queue
+            // This will be processed by the connection interval
+            onConnectNodes(fromId, toId);
           }
           
-          // Success message after all connections should be complete
-          setTimeout(() => {
-            setMessages(prev => [
-              ...prev,
-              {
-                text: "I've created your game start script and connected all the nodes! This script will run when the game begins, load the player character, place it at the starting position, enable controls, and set up the camera to follow the player.",
-                sender: 'assistant',
-                timestamp: new Date()
-              }
-            ]);
-          }, createdNodeIds.length * 500);
+          // Success message after all connections are queued
+          setMessages(prev => [
+            ...prev,
+            {
+              text: "I've created your game start script and connected all the nodes! This script will run when the game begins, load the player character, place it at the starting position, enable controls, and set up the camera to follow the player.",
+              sender: 'assistant',
+              timestamp: new Date()
+            }
+          ]);
         } else {
           // Fallback if node creation didn't work properly
           console.warn("Not enough nodes created to form connections:", createdNodeIds);
@@ -415,7 +423,7 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
             }
           ]);
         }
-      }, 3000); // Much longer delay to ensure all nodes are fully created
+      }, 2000); // Shorter delay since we're only queueing connections, not creating them directly
     } catch (error) {
       console.error("Error creating game start script:", error);
       
