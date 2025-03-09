@@ -1,0 +1,228 @@
+.scripting-assistant {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 350px;
+  height: 100%;
+  background-color: #1e1e2f;
+  border-left: 1px solid #2d2d3a;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.scripting-assistant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #2d2d44;
+  border-bottom: 1px solid #3d3d60;
+}
+
+.scripting-assistant-header h3 {
+  margin: 0;
+  color: #c586c0;
+  font-size: 1.1em;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #e0e0e0;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.close-button:hover {
+  color: #ffffff;
+}
+
+.scripting-assistant-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.scripting-assistant-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.user-message {
+  align-self: flex-end;
+  background-color: #4d4d74;
+  color: #ffffff;
+  border-bottom-right-radius: 0;
+}
+
+.assistant-message {
+  align-self: flex-start;
+  background-color: #2d2d44;
+  color: #e0e0e0;
+  border-bottom-left-radius: 0;
+}
+
+.message-content {
+  padding: 10px;
+  border-radius: 8px;
+  word-wrap: break-word;
+}
+
+.message-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.message-buttons .action-button {
+  background-color: #7e57c2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.message-buttons .action-button:hover {
+  background-color: #9575cd;
+}
+
+.message-time {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 4px;
+}
+
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background-color: #c586c0;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.quick-actions {
+  padding: 10px 15px;
+  background-color: #2d2d44;
+  border-top: 1px solid #3d3d60;
+}
+
+.quick-actions-title {
+  font-size: 0.9em;
+  color: #c586c0;
+  margin-bottom: 8px;
+}
+
+.quick-actions-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-actions-buttons button {
+  flex: 1;
+  min-width: 100px;
+  padding: 6px 10px;
+  background-color: #4d4d74;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.quick-actions-buttons button:hover {
+  background-color: #6868b0;
+}
+
+.scripting-assistant-input {
+  display: flex;
+  padding: 10px 15px;
+  background-color: #2d2d44;
+  border-top: 1px solid #3d3d60;
+}
+
+.scripting-assistant-input input {
+  flex: 1;
+  padding: 8px 12px;
+  background-color: #1e1e2f;
+  border: 1px solid #3d3d60;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.9em;
+}
+
+.scripting-assistant-input button {
+  padding: 8px 15px;
+  margin-left: 8px;
+  background-color: #c586c0;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.scripting-assistant-input button:hover:not(:disabled) {
+  background-color: #d393d3;
+}
+
+.scripting-assistant-input button:disabled {
+  background-color: #573d57;
+  cursor: not-allowed;
+} 

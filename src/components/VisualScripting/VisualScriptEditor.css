@@ -104,21 +104,89 @@
 }
 
 /* Main editor content area */
-.editor-content {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
+.visual-script-content {
+  display: flex !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  width: 100% !important;
+  height: calc(100vh - 120px) !important; /* Adjust height to account for header and toolbar */
+}
+
+/* React Flow container */
+.react-flow-container {
+  flex: 1 !important;
+  height: 100% !important;
+  position: relative !important;
+  background-color: #1a1a2a !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  z-index: 1 !important;
+}
+
+/* Make sure nodes are visible */
+.react-flow__node {
+  background: #333;
+  color: white;
+  border-radius: 4px;
+  border: 1px solid #555;
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.react-flow__edge {
+  stroke: #aaa;
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected {
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.react-flow__controls {
+  background: #252535;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.react-flow__controls button {
+  background: #303045;
+  color: #ddd;
+  border: 1px solid #444;
+}
+
+.react-flow__controls button:hover {
+  background: #3a3a5a;
+}
+
+.react-flow__node.selected {
+  box-shadow: 0 0 0 2px #5a8adb;
+}
+
+.react-flow__edge.animated path {
+  stroke-dasharray: 5;
+  animation: flowAnimation 1s infinite linear;
+}
+
+/* Adjust minimap styling */
+.react-flow__minimap {
+  background-color: #252535;
+  border-radius: 4px;
+  border: 1px solid #3a3a4a;
 }
 
 /* Node selector panel */
 .node-selector {
-  width: 300px;
-  height: 100%;
-  background-color: #252535; /* Dark sidebar */
-  border-right: 1px solid #3a3a4a;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  width: 300px !important;
+  min-width: 300px !important;
+  height: 100% !important;
+  background-color: #252535 !important;
+  border-right: 1px solid #3a3a4a !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 2 !important;
 }
 
 .node-selector-search {
@@ -257,17 +325,6 @@
   color: #888;
 }
 
-/* Flow container (canvas) */
-.flow-container {
-  flex: 1;
-  position: relative;
-  background-color: #1a1a2a; /* Dark canvas background with grid */
-  background-image: 
-    linear-gradient(to right, rgba(80, 80, 100, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(80, 80, 100, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
 /* Info panel */
 .flow-info-panel {
   background-color: rgba(255, 255, 255, 0.9);
@@ -279,30 +336,6 @@
 .info-panel-content {
   font-size: 12px;
   color: #666;
-}
-
-/* ReactFlow customizations */
-.react-flow__node {
-  font-size: 12px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.react-flow__controls {
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.react-flow__controls-button {
-  background-color: #fff;
-  border: none;
-  box-shadow: none;
-}
-
-.react-flow__minimap {
-  border-radius: 8px;
-  overflow: hidden;
 }
 
 /* Node styling */
@@ -548,11 +581,6 @@
   height: 12px;
 }
 
-.react-flow__edge.animated path {
-  stroke-dasharray: 5;
-  animation: flowAnimation 1s infinite linear;
-}
-
 @keyframes flowAnimation {
   from {
     stroke-dashoffset: 10;
@@ -574,4 +602,57 @@
     border-right: none;
     border-bottom: 1px solid #e1e4e8;
   }
+}
+
+/* Visual Script Toolbar */
+.visual-script-toolbar {
+  display: flex;
+  padding: 10px;
+  background-color: #1e1e2e;
+  border-bottom: 1px solid #333340;
+  align-items: center;
+}
+
+/* Quick action buttons in toolbar */
+.visual-script-toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #303045;
+  border: 1px solid #4a4a5a;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-right: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #e0e0e0;
+}
+
+.visual-script-toolbar button:hover {
+  background-color: #3a3a50;
+  border-color: #5a5a6a;
+}
+
+.visual-script-toolbar button.primary {
+  background-color: #2a3a6a;
+  border-color: #3a4a7a;
+  color: #9abaff;
+}
+
+.visual-script-toolbar button.primary:hover {
+  background-color: #3a4a7a;
+  border-color: #4a5a8a;
+}
+
+/* AI Script Helper button styling */
+.visual-script-toolbar .assistant-button {
+  background-color: #8a2be2;
+  color: white;
+  margin-left: auto;
+}
+
+.visual-script-toolbar .assistant-button:hover {
+  background-color: #9b4ddb;
 } 
