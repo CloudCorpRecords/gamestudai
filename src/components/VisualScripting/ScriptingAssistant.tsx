@@ -1,6 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ScriptingAssistant.css';
 
+// Extend window interface to allow for global node tracking
+declare global {
+  interface Window {
+    createdNodes?: string[];
+  }
+}
+
 interface Button {
   label: string;
   action: () => void;
@@ -203,14 +210,16 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
     const connectionsObj = template[template.length - 1];
     const connections = connectionsObj && connectionsObj.connections ? connectionsObj.connections : [];
     
+    // Clear the global node tracking array
+    window.createdNodes = [];
+    
     // Create a map of template node types to actual node IDs
-    const nodeIdMap: {[key: string]: string} = {};
+    const nodeTypeToIndexMap: {[key: string]: number} = {};
     
     // Create each node
-    nodes.forEach((node: any) => {
-      // Generate a unique ID for this node
-      const uniqueId = Math.random().toString(36).substr(2, 9);
-      nodeIdMap[node.type] = uniqueId;
+    nodes.forEach((node: any, index) => {
+      // Track which index each node type is at
+      nodeTypeToIndexMap[node.type] = index;
       
       // Create the node in the editor
       onCreateNode(node.type, node.position);
@@ -218,15 +227,26 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
     
     // Create connections after a short delay to ensure nodes are created
     setTimeout(() => {
-      // Connect nodes based on the template connections
-      connections.forEach((connection: any) => {
-        const fromId = nodeIdMap[connection.from];
-        const toId = nodeIdMap[connection.to];
-        
-        if (fromId && toId) {
-          onConnectNodes(fromId, toId);
-        }
-      });
+      // Get the created node IDs from the global tracking variable
+      const createdNodeIds = window.createdNodes || [];
+      
+      // Check if we have enough nodes to connect
+      if (createdNodeIds.length >= 2) {
+        // Connect nodes based on the template connections
+        connections.forEach((connection: any) => {
+          const fromIndex = nodeTypeToIndexMap[connection.from];
+          const toIndex = nodeTypeToIndexMap[connection.to];
+          
+          if (fromIndex !== undefined && toIndex !== undefined && 
+              fromIndex < createdNodeIds.length && toIndex < createdNodeIds.length) {
+            const fromId = createdNodeIds[fromIndex];
+            const toId = createdNodeIds[toIndex];
+            
+            console.log(`Connecting: ${connection.from}(${fromId}) -> ${connection.to}(${toId})`);
+            onConnectNodes(fromId, toId);
+          }
+        });
+      }
       
       // Send follow-up message
       setMessages(prev => [
@@ -237,7 +257,10 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
           timestamp: new Date()
         }
       ]);
-    }, 1000);
+      
+      // Clear the global tracking array after we're done
+      window.createdNodes = [];
+    }, 1500);
   };
   
   // Check if the prompt is asking to create a specific script
@@ -306,23 +329,57 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
         y: 200
       }));
       
+      // Clear the global node tracking array
+      window.createdNodes = [];
+      
       // Create each node
       nodeTypes.forEach((nodeType, index) => {
         console.log(`Creating node ${index+1}/${nodeTypes.length}: ${nodeType} at position:`, positions[index]);
+        // Create node and let it be tracked via the global window.createdNodes array
         onCreateNode(nodeType, positions[index]);
       });
       
-      // Send success message after a delay to allow nodes to be created
+      // Wait for nodes to be created before attempting connections
       setTimeout(() => {
-        setMessages(prev => [
-          ...prev,
-          {
-            text: "I've created your game start script! The nodes have been placed in the editor. To finish setting up the script, you'll need to connect the nodes in this order:\n\n1. OnGameStart → LoadPlayerCharacter\n2. LoadPlayerCharacter → SetPosition\n3. SetPosition → EnablePlayerControls\n4. EnablePlayerControls → SetupCamera\n\nDrag from the output of each node to the input of the next node to connect them.",
-            sender: 'assistant',
-            timestamp: new Date()
+        // Get the created node IDs from the global tracking variable
+        const createdNodeIds = window.createdNodes || [];
+        console.log("Nodes created during this operation:", createdNodeIds);
+        
+        // Check if we have enough nodes to connect
+        if (createdNodeIds.length >= 2) {
+          console.log(`Creating connections between ${createdNodeIds.length} nodes:`, createdNodeIds);
+          
+          // Connect nodes in sequence
+          for (let i = 0; i < createdNodeIds.length - 1; i++) {
+            console.log(`Connecting node ${i} to node ${i+1}: ${createdNodeIds[i]} -> ${createdNodeIds[i+1]}`);
+            onConnectNodes(createdNodeIds[i], createdNodeIds[i+1]);
           }
-        ]);
-      }, 1000);
+          
+          // Success message
+          setMessages(prev => [
+            ...prev,
+            {
+              text: "I've created your game start script and connected all the nodes! This script will run when the game begins, load the player character, place it at the starting position, enable controls, and set up the camera to follow the player.",
+              sender: 'assistant',
+              timestamp: new Date()
+            }
+          ]);
+        } else {
+          // Fallback if node creation didn't work properly
+          console.warn("Not enough nodes created to form connections:", createdNodeIds);
+          setMessages(prev => [
+            ...prev,
+            {
+              text: "I've created your game start script nodes but couldn't automatically connect them all. You may need to connect some nodes manually by dragging from the output of one node to the input of the next.",
+              sender: 'assistant',
+              timestamp: new Date()
+            }
+          ]);
+        }
+        
+        // Clear the global tracking array after we're done
+        window.createdNodes = [];
+      }, 1500); // Increase timeout to ensure nodes are fully created
     } catch (error) {
       console.error("Error creating game start script:", error);
       

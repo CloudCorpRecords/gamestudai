@@ -38,6 +38,13 @@ import './VisualScriptEditor.css';
 import { GeneratedScript } from '../AIAssistant/ScriptGenerator';
 import ScriptingAssistant from './ScriptingAssistant';
 
+// Extend window interface to allow for our global tracking variable
+declare global {
+  interface Window {
+    createdNodes?: string[];
+  }
+}
+
 // Define node types for ReactFlow
 const nodeTypes = {
   scriptNode: ScriptNode,
@@ -665,13 +672,22 @@ const VisualScriptEditorContent: React.FC = () => {
     
     console.log("Adding node to flow:", newNode);
     
+    // Track node creation in the global window object temporarily
+    if (!window.createdNodes) {
+      window.createdNodes = [];
+    }
+    window.createdNodes.push(nodeId);
+    
     // Add the node to the flow
     setNodes((nds) => {
       console.log("Current nodes:", nds.length);
       return [...nds, newNode];
     });
     
-    // Return the node ID for connections
+    // Return the node ID
+    // Note: In React, this won't actually work reliably because state updates are asynchronous
+    // and the nodes won't be updated by the time this function returns.
+    // We use the window.createdNodes global as a workaround.
     return nodeId;
   };
   
