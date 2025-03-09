@@ -672,11 +672,14 @@ const VisualScriptEditorContent: React.FC = () => {
     
     console.log("Adding node to flow:", newNode);
     
-    // Track node creation in the global window object temporarily
-    if (!window.createdNodes) {
-      window.createdNodes = [];
+    // Track node creation in the global window object
+    if (typeof window !== 'undefined') {
+      if (!window.createdNodes) {
+        window.createdNodes = [];
+      }
+      window.createdNodes.push(nodeId);
+      console.log("Updated createdNodes array:", window.createdNodes);
     }
-    window.createdNodes.push(nodeId);
     
     // Add the node to the flow
     setNodes((nds) => {
@@ -693,32 +696,58 @@ const VisualScriptEditorContent: React.FC = () => {
   
   // Add function to connect nodes from the assistant
   const connectNodesFromAssistant = (fromId: string, toId: string) => {
+    console.log(`Attempting to connect nodes: ${fromId} -> ${toId}`);
+    
+    // Validate IDs
+    if (!fromId || !toId) {
+      console.error("Invalid node IDs for connection:", { fromId, toId });
+      return;
+    }
+    
     const fromNode = nodes.find(node => node.id === fromId);
     const toNode = nodes.find(node => node.id === toId);
     
     if (!fromNode || !toNode) {
-      console.error(`Cannot connect nodes: ${fromId} -> ${toId}`);
+      console.error(`Cannot find nodes: ${fromId} -> ${toId}`);
+      console.log("Available nodes:", nodes.map(n => ({ id: n.id, label: n.data.label })));
       return;
     }
     
+    console.log("Found nodes to connect:", {
+      fromNode: { id: fromNode.id, label: fromNode.data.label },
+      toNode: { id: toNode.id, label: toNode.data.label }
+    });
+    
     // Determine which handles to connect
-    let sourceHandle = 'output';
-    let targetHandle = 'input';
+    let sourceHandle = null; // Use null for default handle
+    let targetHandle = null; // Use null for default handle
     
     // For "Branch" nodes, use the "true" output by default
     if (fromNode.data.label === 'Branch') {
       sourceHandle = 'true';
     }
     
+    // Create the edge definition
     const newEdge: Edge = {
       id: `e${fromId}-${toId}`,
       source: fromId,
       target: toId,
       sourceHandle,
       targetHandle,
+      animated: true, // Make edges animated for better visibility
     };
     
-    setEdges((eds) => addEdge(newEdge, eds));
+    console.log("Creating edge:", newEdge);
+    
+    // Add the edge to the flow
+    setEdges((eds) => {
+      const updatedEdges = addEdge(newEdge, eds);
+      console.log("Updated edges:", updatedEdges);
+      return updatedEdges;
+    });
+    
+    // Mark as modified
+    setIsModified(true);
   };
   
   // Toggle the scripting assistant visibility

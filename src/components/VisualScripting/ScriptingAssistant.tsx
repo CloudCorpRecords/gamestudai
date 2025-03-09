@@ -221,8 +221,12 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
       // Track which index each node type is at
       nodeTypeToIndexMap[node.type] = index;
       
-      // Create the node in the editor
-      onCreateNode(node.type, node.position);
+      // Create the node in the editor - ensure each node has some spacing
+      const adjustedPosition = {
+        x: node.position.x * 1.2, // Add more spacing horizontally
+        y: node.position.y
+      };
+      onCreateNode(node.type, adjustedPosition);
     });
     
     // Create connections after a short delay to ensure nodes are created
@@ -232,18 +236,22 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
       
       // Check if we have enough nodes to connect
       if (createdNodeIds.length >= 2) {
-        // Connect nodes based on the template connections
-        connections.forEach((connection: any) => {
+        // Connect nodes based on the template connections with delays
+        connections.forEach((connection: any, index) => {
           const fromIndex = nodeTypeToIndexMap[connection.from];
           const toIndex = nodeTypeToIndexMap[connection.to];
           
           if (fromIndex !== undefined && toIndex !== undefined && 
               fromIndex < createdNodeIds.length && toIndex < createdNodeIds.length) {
-            const fromId = createdNodeIds[fromIndex];
-            const toId = createdNodeIds[toIndex];
             
-            console.log(`Connecting: ${connection.from}(${fromId}) -> ${connection.to}(${toId})`);
-            onConnectNodes(fromId, toId);
+            // Add delay between connections for better reliability
+            setTimeout(() => {
+              const fromId = createdNodeIds[fromIndex];
+              const toId = createdNodeIds[toIndex];
+              
+              console.log(`Connecting: ${connection.from}(${fromId}) -> ${connection.to}(${toId})`);
+              onConnectNodes(fromId, toId);
+            }, index * 300);
           }
         });
       }
@@ -259,8 +267,10 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
       ]);
       
       // Clear the global tracking array after we're done
-      window.createdNodes = [];
-    }, 1500);
+      setTimeout(() => {
+        window.createdNodes = [];
+      }, connections.length * 300 + 500); // Clear after all connections are made
+    }, 2000); // Increase timeout to ensure nodes are fully created
   };
   
   // Check if the prompt is asking to create a specific script
@@ -323,9 +333,9 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
         "SetupCamera"
       ];
       
-      // Create positions spaced out horizontally
+      // Create positions spaced out horizontally with more spacing
       const positions = nodeTypes.map((_, index) => ({
-        x: 100 + (index * 250), 
+        x: 100 + (index * 300), // Increase horizontal spacing
         y: 200
       }));
       
@@ -349,11 +359,18 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
         if (createdNodeIds.length >= 2) {
           console.log(`Creating connections between ${createdNodeIds.length} nodes:`, createdNodeIds);
           
-          // Connect nodes in sequence
-          for (let i = 0; i < createdNodeIds.length - 1; i++) {
-            console.log(`Connecting node ${i} to node ${i+1}: ${createdNodeIds[i]} -> ${createdNodeIds[i+1]}`);
-            onConnectNodes(createdNodeIds[i], createdNodeIds[i+1]);
-          }
+          // Connect nodes in sequence with a delay between connections
+          const createConnections = () => {
+            for (let i = 0; i < createdNodeIds.length - 1; i++) {
+              setTimeout(() => {
+                console.log(`Connecting node ${i} to node ${i+1}: ${createdNodeIds[i]} -> ${createdNodeIds[i+1]}`);
+                onConnectNodes(createdNodeIds[i], createdNodeIds[i+1]);
+              }, i * 300); // Add a delay between connections
+            }
+          };
+          
+          // Start creating connections
+          createConnections();
           
           // Success message
           setMessages(prev => [
@@ -379,7 +396,7 @@ const ScriptingAssistant: React.FC<ScriptingAssistantProps> = ({
         
         // Clear the global tracking array after we're done
         window.createdNodes = [];
-      }, 1500); // Increase timeout to ensure nodes are fully created
+      }, 2000); // Increase timeout to ensure nodes are fully created
     } catch (error) {
       console.error("Error creating game start script:", error);
       
