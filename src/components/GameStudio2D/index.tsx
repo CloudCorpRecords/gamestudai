@@ -5,6 +5,8 @@ import gameBridge from './GameBridge';
 import scriptIntegration from './ScriptIntegration';
 import EventEditor from './EventEditor';
 import ScriptSelector from './ScriptSelector';
+import CutsceneEditor from './CutsceneEditor';
+import CutscenePlayer from './CutscenePlayer';
 
 // RPG Maker-style templates and resources
 const CHARACTER_TEMPLATES: RPGCharacter[] = [
@@ -147,8 +149,16 @@ const INITIAL_GAME_STATE: RPGGameState = {
   inventory: ['Potion', 'Basic Sword']
 };
 
+// Extend RPGMap interface to include opening cutscene
+interface RPGMapWithCutscene extends RPGMap {
+  openingCutscene?: RPGEvent;
+}
+
 // Main component
 const GameStudio2D: React.FC = () => {
+  // Add screen state to control what's displayed
+  const [currentScreen, setCurrentScreen] = useState<'editor' | 'start' | 'options' | 'playing' | 'cutscene'>('editor');
+  
   // State for the 2D game studio
   const [isEditing, setIsEditing] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -179,6 +189,146 @@ const GameStudio2D: React.FC = () => {
   const [currentEvent, setCurrentEvent] = useState<RPGEvent | null>(null);
   const [showScriptSelector, setShowScriptSelector] = useState<boolean>(false);
   const [scriptLibraryLoaded, setScriptLibraryLoaded] = useState<boolean>(false);
+
+  // Add state to track if we should return to editor
+  const [returnToEditor, setReturnToEditor] = useState(false);
+
+  // Add state for cutscene editor
+  const [showCutsceneEditor, setShowCutsceneEditor] = useState<boolean>(false);
+  const [currentCutscene, setCurrentCutscene] = useState<RPGEvent | null>(null);
+  const [showCutscenePlayer, setShowCutscenePlayer] = useState(false);
+  const [gameSettings, setGameSettings] = useState({
+    playOpeningCutscene: true,
+    showTitle: true,
+    titleText: 'Fantasy Adventure',
+    titleBackground: 'default_bg',
+  });
+
+  // Add cutscene state
+  const [cutsceneActive, setCutsceneActive] = useState<boolean>(false);
+
+  // Add game settings editor
+  const [showGameSettingsEditor, setShowGameSettingsEditor] = useState<boolean>(false);
+
+  // Start screen handlers
+  const handleStartNewGame = () => {
+    // Check if we have an edited map from the editor
+    const savedEditorMap = localStorage.getItem('rpgmaker_editor_map');
+    
+    // Set up new game state
+    const newGameState = {
+      // Use the saved map from the editor if available, otherwise create a fresh map
+      currentMap: savedEditorMap ? JSON.parse(savedEditorMap) : createTownMap(),
+      player: CHARACTER_TEMPLATES[0],
+      npcs: [
+        { ...CHARACTER_TEMPLATES[1], position: { x: 10, y: 8 } },
+        { ...CHARACTER_TEMPLATES[2], position: { x: 15, y: 12 } }
+      ],
+      variables: {},
+      switches: {},
+      gameTime: 0,
+      inventory: ['Potion', 'Basic Sword']
+    };
+    
+    setGameState(newGameState);
+    setIsPlaying(true);
+    
+    // Check if this map has an opening cutscene and settings allow for it
+    if (gameSettings.playOpeningCutscene && 
+        (newGameState.currentMap as RPGMapWithCutscene).openingCutscene) {
+      // Start in cutscene mode
+      setCutsceneActive(true);
+      setCurrentCutscene((newGameState.currentMap as RPGMapWithCutscene).openingCutscene);
+      setCurrentScreen('cutscene');
+    } else {
+      // Skip to regular gameplay
+      setCurrentScreen('playing');
+    }
+  };
+
+  const handleContinueGame = () => {
+    // Check if we have an edited map from the editor
+    const savedEditorMap = localStorage.getItem('rpgmaker_editor_map');
+    
+    const savedGame = localStorage.getItem('rpgmaker_last_session');
+    if (savedGame) {
+      try {
+        const gameData = JSON.parse(savedGame) as RPGGameState;
+        
+        // If we have an edited map from the editor, use it instead of the saved map
+        if (savedEditorMap && returnToEditor) {
+          gameData.currentMap = JSON.parse(savedEditorMap);
+        }
+        
+        setGameState(gameData);
+        setMapSize({ 
+          width: gameData.currentMap.width, 
+          height: gameData.currentMap.height 
+        });
+        setIsPlaying(true);
+        setCurrentScreen('playing');
+      } catch (e) {
+        alert('Could not load last session. Starting new game.');
+        handleStartNewGame();
+      }
+    } else {
+      alert('No previous session found. Starting new game.');
+      handleStartNewGame();
+    }
+  };
+
+  const handleLoadSavedGame = () => {
+    // Check if we have an edited map from the editor
+    const savedEditorMap = localStorage.getItem('rpgmaker_editor_map');
+    
+    const savedGame = localStorage.getItem('rpgmaker_game');
+    if (savedGame) {
+      try {
+        const gameData = JSON.parse(savedGame) as RPGGameState;
+        
+        // If we have an edited map from the editor, use it instead of the saved map
+        if (savedEditorMap && returnToEditor) {
+          gameData.currentMap = JSON.parse(savedEditorMap);
+        }
+        
+        setGameState(gameData);
+        setMapSize({ 
+          width: gameData.currentMap.width, 
+          height: gameData.currentMap.height 
+        });
+        setIsPlaying(true);
+        setCurrentScreen('playing');
+        alert('Game loaded!');
+      } catch (e) {
+        alert('Could not load saved game.');
+      }
+    } else {
+      alert('No saved game found.');
+    }
+  };
+
+  // Back to editor button handler
+  const handleBackToEditor = () => {
+    // Stop game and return to editor
+    setIsPlaying(false);
+    setIsEditing(true);
+    setCurrentScreen('editor');
+    setReturnToEditor(false);
+    // If there was a game loop running, cancel it
+    if (gameLoopRef.current) {
+      cancelAnimationFrame(gameLoopRef.current);
+      gameLoopRef.current = null;
+    }
+  };
+
+  // Back to start screen button handler
+  const handleBackToStartScreen = () => {
+    // Save current game state as last session
+    localStorage.setItem('rpgmaker_last_session', JSON.stringify(gameState));
+    // Stop playing and go back to start screen
+    setIsPlaying(false);
+    setCurrentScreen('start');
+  };
 
   // Initialize script integration
   useEffect(() => {
@@ -212,42 +362,136 @@ const GameStudio2D: React.FC = () => {
   // Handle key presses for player movement
   useEffect(() => {
     if (isPlaying) {
+      const keys = {
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+        interact: false
+      };
+
+      // Clean up any existing animation elements
+      document.querySelectorAll('.movement-ripple').forEach(el => el.remove());
+      
       const handleKeyDown = (e: KeyboardEvent) => {
         if (!isPlaying) return;
         
-        let newPosition = { ...gameState.player.position };
-        let newDirection = gameState.player.direction;
+        // Prevent default behavior for game controls
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', ' ', 'Enter'].includes(e.key)) {
+          e.preventDefault();
+        }
         
+        // Update keys state
         switch (e.key) {
           case 'ArrowUp':
-            newPosition.y = Math.max(0, newPosition.y - 1);
-            newDirection = 'up';
+          case 'w':
+            keys.up = true;
             break;
           case 'ArrowDown':
-            newPosition.y = Math.min(gameState.currentMap.height - 1, newPosition.y + 1);
-            newDirection = 'down';
+          case 's':
+            keys.down = true;
             break;
           case 'ArrowLeft':
-            newPosition.x = Math.max(0, newPosition.x - 1);
-            newDirection = 'left';
+          case 'a':
+            keys.left = true;
             break;
           case 'ArrowRight':
-            newPosition.x = Math.min(gameState.currentMap.width - 1, newPosition.x + 1);
-            newDirection = 'right';
+          case 'd':
+            keys.right = true;
             break;
           case ' ':
           case 'Enter':
-            // Interact with tile in front of player
-            const interactPos = getPositionInFront(gameState.player.position, newDirection);
+          case 'e':
+            keys.interact = true;
+            // Process immediate interaction
+            const interactPos = getPositionInFront(gameState.player.position, gameState.player.direction);
             handleInteraction(interactPos);
             break;
-          default:
-            return;
         }
-        
+
+        movePlayer();
+      };
+
+      const handleKeyUp = (e: KeyboardEvent) => {
+        // Update keys state on key release
+        switch (e.key) {
+          case 'ArrowUp':
+          case 'w':
+            keys.up = false;
+            break;
+          case 'ArrowDown':
+          case 's':
+            keys.down = false;
+            break;
+          case 'ArrowLeft':
+          case 'a':
+            keys.left = false;
+            break;
+          case 'ArrowRight':
+          case 'd':
+            keys.right = false;
+            break;
+          case ' ':
+          case 'Enter':
+          case 'e':
+            keys.interact = false;
+            break;
+        }
+      };
+
+      const movePlayer = () => {
+        let newPosition = { ...gameState.player.position };
+        let newDirection = gameState.player.direction;
+        let moved = false;
+
+        // Determine movement direction
+        if (keys.up && !keys.down) {
+          newPosition.y = Math.max(0, newPosition.y - 1);
+          newDirection = 'up';
+          moved = true;
+        } else if (keys.down && !keys.up) {
+          newPosition.y = Math.min(gameState.currentMap.height - 1, newPosition.y + 1);
+          newDirection = 'down';
+          moved = true;
+        }
+
+        if (keys.left && !keys.right) {
+          newPosition.x = Math.max(0, newPosition.x - 1);
+          
+          // Keep y-axis direction if moving diagonally, otherwise set to left
+          if (!keys.up && !keys.down) {
+            newDirection = 'left';
+          }
+          
+          moved = true;
+        } else if (keys.right && !keys.left) {
+          newPosition.x = Math.min(gameState.currentMap.width - 1, newPosition.x + 1);
+          
+          // Keep y-axis direction if moving diagonally, otherwise set to right
+          if (!keys.up && !keys.down) {
+            newDirection = 'right';
+          }
+          
+          moved = true;
+        }
+
+        if (moved) {
         // Check if the new position is walkable
         const targetTile = gameState.currentMap.tiles[newPosition.y]?.[newPosition.x];
+          
         if (targetTile && targetTile.walkable) {
+            // Update player position with smooth transition
+            const playerElement = document.querySelector('.player-character');
+            if (playerElement && playerElement instanceof HTMLElement) {
+              // Apply smooth transition
+              playerElement.style.transition = 'transform 0.15s ease-out';
+              playerElement.style.transform = `translate(${0}px, ${0}px)`;
+              
+              // Update actual position instead of using transform
+              playerElement.style.left = `${newPosition.x * 32}px`;
+              playerElement.style.top = `${newPosition.y * 32}px`;
+            }
+            
           setGameState(prev => ({
             ...prev,
             player: {
@@ -259,15 +503,73 @@ const GameStudio2D: React.FC = () => {
           
           // Check for events at new position
           checkForEvents(newPosition);
+            
+            // Add movement feedback
+            addMovementFeedback(newPosition);
+          }
         }
       };
+
+      // Add visual feedback for movement
+      const addMovementFeedback = (position: {x: number, y: number}) => {
+        // Disable the ripple effect to remove splashing animation
+        return;
+      };
+
+      // Add ripple animation style if not exists
+      if (!document.getElementById('ripple-animation')) {
+        // Disabled to remove splashing animation
+        // const style = document.createElement('style');
+        // style.id = 'ripple-animation';
+        // style.textContent = `
+        //   @keyframes ripple {
+        //     0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        //     100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        //   }
+        // `;
+        // document.head.appendChild(style);
+      }
       
+      // Add controls help indicator
+      const controlsIndicator = document.createElement('div');
+      controlsIndicator.id = 'controls-indicator';
+      controlsIndicator.className = 'controls-indicator';
+      controlsIndicator.innerHTML = `
+        <div style="padding: 10px; background: rgba(0,0,0,0.7); color: white; position: fixed; bottom: 10px; left: 10px; border-radius: 5px; z-index: 1000;">
+          <strong>Controls:</strong>
+          <div>Move: WASD / Arrow Keys</div>
+          <div>Interact: E / Space / Enter</div>
+        </div>
+      `;
+      document.body.appendChild(controlsIndicator);
+      
+      // Set up event listeners
       window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      
+      // Movement loop for smooth continuous movement
+      const movementLoop = setInterval(movePlayer, 150); // Player movement speed in ms
+      
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+        clearInterval(movementLoop);
+        
+        // Clean up UI elements
+        const indicator = document.getElementById('controls-indicator');
+        if (indicator) indicator.remove();
+        
+        // Clean up ripple-related elements and styles
+        const rippleStyle = document.getElementById('ripple-animation');
+        if (rippleStyle) rippleStyle.remove();
+        
+        // Remove any remaining ripple animations
+        document.querySelectorAll('.movement-ripple').forEach(el => el.remove());
+      };
     }
   }, [isPlaying, gameState]);
   
-  // Start game loop when playing
+  // Start game loop when playing (for NPCs and game time)
   useEffect(() => {
     if (isPlaying) {
       if (gameLoopRef.current) {
@@ -294,6 +596,12 @@ const GameStudio2D: React.FC = () => {
       return () => {
         if (gameLoopRef.current) {
           cancelAnimationFrame(gameLoopRef.current);
+        }
+        
+        // Clean up player character element when game stops
+        const playerElement = document.querySelector('.player-character');
+        if (playerElement) {
+          playerElement.remove();
         }
       };
     }
@@ -482,14 +790,42 @@ const GameStudio2D: React.FC = () => {
     
     // Draw player
     ctx.fillStyle = '#00FFFF'; // Cyan for player
-    ctx.fillRect(
-      gameState.player.position.x * tileSize + 4, 
-      gameState.player.position.y * tileSize + 4, 
-      tileSize - 8, 
-      tileSize - 8
-    );
     
-    // Direction indicator
+    // Draw player with border for better visibility
+    const playerX = gameState.player.position.x * tileSize;
+    const playerY = gameState.player.position.y * tileSize;
+    
+    ctx.fillRect(playerX + 4, playerY + 4, tileSize - 8, tileSize - 8);
+    
+    // Add border
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(playerX + 4, playerY + 4, tileSize - 8, tileSize - 8);
+    
+    // Add player-character class for CSS targeting
+    const playerElement = document.createElement('div');
+    playerElement.className = 'player-character';
+    playerElement.style.position = 'absolute';
+    playerElement.style.left = `${playerX}px`;
+    playerElement.style.top = `${playerY}px`;
+    playerElement.style.width = `${tileSize}px`;
+    playerElement.style.height = `${tileSize}px`;
+    playerElement.style.backgroundColor = 'rgba(0, 255, 255, 0)'; // Make invisible to avoid overlap
+    playerElement.style.borderRadius = '4px';
+    playerElement.style.zIndex = '100';
+    playerElement.style.transition = 'transform 0.15s ease-out';
+    playerElement.setAttribute('data-direction', gameState.player.direction);
+    
+    // Remove any existing player element
+    const existingPlayer = document.querySelector('.player-character');
+    if (existingPlayer) {
+      existingPlayer.remove();
+    }
+    
+    // Add to canvas parent
+    canvasRef.current?.parentElement?.appendChild(playerElement);
+    
+    // Direction indicator with enhanced visibility
     drawDirectionIndicator(ctx, gameState.player.position, gameState.player.direction, '#00FFFF');
   };
   
@@ -503,34 +839,47 @@ const GameStudio2D: React.FC = () => {
     const tileSize = 32;
     const centerX = position.x * tileSize + tileSize / 2;
     const centerY = position.y * tileSize + tileSize / 2;
+    const size = tileSize / 5; // Slightly smaller for better alignment
     
     ctx.fillStyle = color;
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    
+    // Draw the direction indicator directly attached to the player square
     ctx.beginPath();
+    
+    // Calculate offset to place the indicator just outside the player square
+    const offset = tileSize / 2 - 2; // Half tile size minus a small gap
     
     switch (direction) {
       case 'up':
-        ctx.moveTo(centerX, centerY - 10);
-        ctx.lineTo(centerX - 5, centerY - 5);
-        ctx.lineTo(centerX + 5, centerY - 5);
+        // Arrow pointing up from top of player square
+        ctx.moveTo(centerX, centerY - offset);
+        ctx.lineTo(centerX - size, centerY - offset + size);
+        ctx.lineTo(centerX + size, centerY - offset + size);
         break;
       case 'down':
-        ctx.moveTo(centerX, centerY + 10);
-        ctx.lineTo(centerX - 5, centerY + 5);
-        ctx.lineTo(centerX + 5, centerY + 5);
+        // Arrow pointing down from bottom of player square
+        ctx.moveTo(centerX, centerY + offset);
+        ctx.lineTo(centerX - size, centerY + offset - size);
+        ctx.lineTo(centerX + size, centerY + offset - size);
         break;
       case 'left':
-        ctx.moveTo(centerX - 10, centerY);
-        ctx.lineTo(centerX - 5, centerY - 5);
-        ctx.lineTo(centerX - 5, centerY + 5);
+        // Arrow pointing left from left side of player square
+        ctx.moveTo(centerX - offset, centerY);
+        ctx.lineTo(centerX - offset + size, centerY - size);
+        ctx.lineTo(centerX - offset + size, centerY + size);
         break;
       case 'right':
-        ctx.moveTo(centerX + 10, centerY);
-        ctx.lineTo(centerX + 5, centerY - 5);
-        ctx.lineTo(centerX + 5, centerY + 5);
+        // Arrow pointing right from right side of player square
+        ctx.moveTo(centerX + offset, centerY);
+        ctx.lineTo(centerX + offset - size, centerY - size);
+        ctx.lineTo(centerX + offset - size, centerY + size);
         break;
     }
-    
+    ctx.closePath();
     ctx.fill();
+    ctx.stroke();
   };
   
   // Handle tile click in edit mode
@@ -686,26 +1035,6 @@ const GameStudio2D: React.FC = () => {
     alert('Game saved!');
   };
   
-  // Load a saved game
-  const handleLoadGame = () => {
-    const savedGame = localStorage.getItem('rpgmaker_game');
-    if (savedGame) {
-      try {
-        const gameData = JSON.parse(savedGame) as RPGGameState;
-        setGameState(gameData);
-        setMapSize({ 
-          width: gameData.currentMap.width, 
-          height: gameData.currentMap.height 
-        });
-        alert('Game loaded!');
-      } catch (e) {
-        alert('Could not load saved game.');
-      }
-    } else {
-      alert('No saved game found.');
-    }
-  };
-  
   // Export the game
   const handleExportGame = () => {
     const gameData = JSON.stringify(gameState, null, 2);
@@ -848,12 +1177,9 @@ const GameStudio2D: React.FC = () => {
     setCurrentEvent(null);
   };
 
-  // Game loop for play mode
+  // Game loop for rendering the game
   const gameLoop = () => {
-    if (!isPlaying || !canvasRef.current) return;
-    
-    // Update game state
-    updateGameState();
+    if (!canvasRef.current) return;
     
     // Draw the game
     const ctx = canvasRef.current.getContext('2d');
@@ -872,18 +1198,286 @@ const GameStudio2D: React.FC = () => {
     gameLoopRef.current = requestAnimationFrame(gameLoop);
   };
 
-  // Update game state
-  const updateGameState = () => {
-    // Handle NPC movement and AI
-    updateNPCs();
-    
-    // Update game time
-    setGameState(prevState => ({
-      ...prevState,
-      gameTime: prevState.gameTime + 1
-    }));
+  // Play mode button handler
+  const handlePlayModeClick = () => {
+    setIsEditing(false);
+    // Save the current map for use when starting the game
+    localStorage.setItem('rpgmaker_editor_map', JSON.stringify(gameState.currentMap));
+    // Instead of directly starting the game, show the start screen
+    setCurrentScreen('start');
+    // Keep track that we came from the editor
+    setReturnToEditor(true);
   };
 
+  // Start Screen Component
+  const StartScreen = () => {
+    return (
+      <div className="start-screen">
+        <div className="start-screen-bg">
+          <div className="splash-image"></div>
+        </div>
+        <div className="start-screen-content">
+          <h1 className="game-title">Fantasy RPG Maker</h1>
+          <div className="menu-container">
+            <button className="menu-button" onClick={handleStartNewGame}>New Game</button>
+            <button className="menu-button" onClick={handleLoadSavedGame}>Load Game</button>
+            <button className="menu-button" onClick={handleContinueGame}>Continue</button>
+            <button className="menu-button" onClick={() => setCurrentScreen('options')}>Options</button>
+            {returnToEditor && (
+              <button className="menu-button back-to-editor" onClick={handleBackToEditor}>
+                Back to Editor
+              </button>
+            )}
+          </div>
+          <div className="version-info">
+            <p>Version 1.0.0</p>
+            <p>© 2023 GameStudAI Engine</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Options Screen Component
+  const OptionsScreen = () => {
+    return (
+      <div className="options-screen">
+        <div className="options-content">
+          <h2>Options</h2>
+          <div className="options-controls">
+            {/* Add options controls here */}
+            <p>No configurable options available yet.</p>
+          </div>
+          <button className="back-button" onClick={() => setCurrentScreen('start')}>
+            Back to Main Menu
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // Playing Game Component
+  const PlayingGame = () => {
+    // Make sure game loop is running
+    useEffect(() => {
+      if (!gameLoopRef.current) {
+        gameLoop();
+      }
+      
+      return () => {
+        if (gameLoopRef.current) {
+          cancelAnimationFrame(gameLoopRef.current);
+          gameLoopRef.current = null;
+        }
+      };
+    }, []);
+    
+    const [playingOpeningCutscene, setPlayingOpeningCutscene] = useState(false);
+    
+    // Check for opening cutscene on game start
+    useEffect(() => {
+      if (gameState.currentMap.openingCutscene) {
+        setPlayingOpeningCutscene(true);
+      }
+    }, []);
+    
+    return (
+      <div className="playing-game">
+        <div className="game-header">
+          <h3>{gameState.currentMap.name}</h3>
+          <div className="game-controls">
+            <button onClick={handleBackToStartScreen}>Main Menu</button>
+            <button onClick={handleSaveGame}>Save Game</button>
+          </div>
+        </div>
+        <div className="game-canvas-container">
+          <canvas 
+            ref={canvasRef}
+            width={gameState.currentMap.width * 32}
+            height={gameState.currentMap.height * 32}
+            className="play-mode"
+          />
+        </div>
+        <div className="game-stats">
+          <div className="player-stats">
+            <span>HP: {gameState.player.stats.hp}</span>
+            <span>MP: {gameState.player.stats.mp}</span>
+            <span>Level: {gameState.player.stats.level}</span>
+          </div>
+        </div>
+        
+        {/* Play opening cutscene if available */}
+        {playingOpeningCutscene && gameState.currentMap.openingCutscene && (
+          <CutscenePlayer
+            event={gameState.currentMap.openingCutscene}
+            onComplete={() => setPlayingOpeningCutscene(false)}
+            onSkip={() => setPlayingOpeningCutscene(false)}
+            characters={{
+              player: 'https://example.com/player-sprite.png',
+              npc1: 'https://example.com/npc1-sprite.png',
+              npc2: 'https://example.com/npc2-sprite.png'
+            }}
+            backgrounds={{
+              default_bg: 'https://example.com/default-bg.jpg',
+              town_bg: 'https://example.com/town-bg.jpg',
+              castle_bg: 'https://example.com/castle-bg.jpg',
+              forest_bg: 'https://example.com/forest-bg.jpg',
+              cave_bg: 'https://example.com/cave-bg.jpg'
+            }}
+          />
+        )}
+      </div>
+    );
+  };
+
+  // Cutscene Player Component
+  const CutscenePlayer = () => {
+    // State to track current action in cutscene
+    const [currentActionIndex, setCurrentActionIndex] = useState(0);
+    
+    // Handle next action
+    const handleNextAction = () => {
+      if (!currentCutscene || currentActionIndex >= currentCutscene.actions.length - 1) {
+        // End of cutscene
+        handleSkipCutscene();
+      } else {
+        setCurrentActionIndex(prevIndex => prevIndex + 1);
+      }
+    };
+    
+    // Render current action
+    const renderCurrentAction = () => {
+      if (!currentCutscene || currentCutscene.actions.length === 0) {
+        return <div>No actions in cutscene</div>;
+      }
+      
+      const action = currentCutscene.actions[currentActionIndex];
+      
+      switch (action.type) {
+        case 'message':
+          return (
+            <div className="cutscene-dialog">
+              <div className="dialog-box">
+                <p>{action.params.text}</p>
+                <div className="dialog-controls">
+                  <button onClick={handleNextAction}>Next</button>
+                </div>
+              </div>
+            </div>
+          );
+          
+        // Add other action types as needed
+        default:
+          return <div>Unknown action type</div>;
+      }
+    };
+    
+    return (
+      <div className="cutscene-player">
+        <div className="cutscene-background">
+          {/* Background elements */}
+          <canvas 
+            ref={canvasRef}
+            width={gameState.currentMap.width * 32}
+            height={gameState.currentMap.height * 32}
+            className="cutscene-canvas"
+          />
+        </div>
+        
+        <div className="cutscene-content">
+          {renderCurrentAction()}
+        </div>
+        
+        <div className="cutscene-controls">
+          <button onClick={handleSkipCutscene} className="skip-button">Skip Cutscene</button>
+        </div>
+      </div>
+    );
+  };
+
+  // Game Settings Editor Component
+  const GameSettingsEditor = () => {
+    const [localSettings, setLocalSettings] = useState({...gameSettings});
+    
+    return (
+      <div className="game-settings-editor">
+        <h3>Game Settings</h3>
+        
+        <div className="settings-group">
+          <label>
+            <input 
+              type="checkbox" 
+              checked={localSettings.playOpeningCutscene}
+              onChange={(e) => setLocalSettings({
+                ...localSettings,
+                playOpeningCutscene: e.target.checked
+              })}
+            />
+            Play Opening Cutscene
+          </label>
+        </div>
+        
+        <div className="settings-group">
+          <label>
+            <input 
+              type="checkbox" 
+              checked={localSettings.showTitle}
+              onChange={(e) => setLocalSettings({
+                ...localSettings,
+                showTitle: e.target.checked
+              })}
+            />
+            Show Title Screen
+          </label>
+        </div>
+        
+        <div className="settings-group">
+          <label>Title Text:</label>
+          <input 
+            type="text" 
+            value={localSettings.titleText}
+            onChange={(e) => setLocalSettings({
+              ...localSettings,
+              titleText: e.target.value
+            })}
+          />
+        </div>
+        
+        <div className="settings-group">
+          <label>Title Background:</label>
+          <select
+            value={localSettings.titleBackground}
+            onChange={(e) => setLocalSettings({
+              ...localSettings,
+              titleBackground: e.target.value
+            })}
+          >
+            <option value="default_bg">Default Background</option>
+            <option value="fantasy">Fantasy Theme</option>
+            <option value="sci_fi">Sci-Fi Theme</option>
+            <option value="horror">Horror Theme</option>
+          </select>
+        </div>
+        
+        <div className="settings-actions">
+          <button onClick={() => setShowGameSettingsEditor(false)}>Cancel</button>
+          <button onClick={() => handleSaveGameSettings(localSettings)}>Save</button>
+        </div>
+      </div>
+    );
+  };
+
+  // Main render
+  if (currentScreen === 'start') {
+    return <StartScreen />;
+  } else if (currentScreen === 'options') {
+    return <OptionsScreen />;
+  } else if (currentScreen === 'playing') {
+    return <PlayingGame />;
+  } else if (currentScreen === 'cutscene') {
+    return <CutscenePlayer />;
+  } else {
+    // Editor view (default)
   return (
     <div className="game-studio-2d">
       <div className="studio-header">
@@ -891,9 +1485,10 @@ const GameStudio2D: React.FC = () => {
         <div className="header-actions">
           <button onClick={handleCreateNewGame}>New Game</button>
           <button onClick={handleSaveGame}>Save</button>
-          <button onClick={handleLoadGame}>Load</button>
+            <button onClick={handleLoadSavedGame}>Load</button>
           <button onClick={handleExportGame}>Export</button>
           <button onClick={exportTo3D}>Export to 3D</button>
+            <button onClick={handleEditGameSettings}>Game Settings</button>
         </div>
       </div>
       
@@ -1008,23 +1603,38 @@ const GameStudio2D: React.FC = () => {
                     gameLoopRef.current = null;
                   }
                 }}
+                  title="Switch to Edit Mode (Esc)"
               >
                 Edit Mode
               </button>
               <button 
-                className={`mode-button ${isPlaying ? 'active' : ''}`}
-                onClick={() => {
-                  setIsEditing(false);
-                  setIsPlaying(true);
-                  if (!gameLoopRef.current) {
-                    gameLoop();
-                  }
-                }}
+                  className={`mode-button ${!isEditing ? 'active' : ''}`}
+                  onClick={handlePlayModeClick}
+                  title="Start the game with a title screen"
               >
                 Play Mode
               </button>
             </div>
           </div>
+            
+            {/* Cutscene Section */}
+            <div className="tools-group">
+              <h3>Cutscenes</h3>
+              <button 
+                className="opening-cutscene-button"
+                onClick={handleOpeningCutsceneClick}
+              >
+                Edit Opening Cutscene
+              </button>
+              {gameState.currentMap.openingCutscene && (
+                <button 
+                  className="preview-button"
+                  onClick={handlePreviewCutscene}
+                >
+                  Preview Opening Cutscene
+                </button>
+              )}
+            </div>
         </div>
         
         <div className="game-view">
@@ -1099,8 +1709,67 @@ const GameStudio2D: React.FC = () => {
           />
         </div>
       )}
+        
+        {/* Add Cutscene section */}
+        <div className="cutscene-section">
+          <h3>Cutscenes</h3>
+          <button 
+            className="cutscene-button"
+            onClick={handleEditOpeningCutscene}
+          >
+            Edit Opening Cutscene
+          </button>
+          <p className="cutscene-info">
+            Create a cutscene that plays when the game starts
+          </p>
+        </div>
+        
+        {/* Modal for cutscene editor */}
+        {showCutsceneEditor && currentCutscene && (
+          <div className="modal-overlay">
+            <CutsceneEditor
+              event={currentCutscene}
+              onSave={handleSaveCutscene}
+              onCancel={handleCancelCutscene}
+            />
+          </div>
+        )}
+        
+        {/* Modal for cutscene player */}
+        {showCutscenePlayer && currentCutscene && (
+          <div className="modal-overlay">
+            <CutscenePlayer
+              event={currentCutscene}
+              onComplete={handleCloseCutscenePlayer}
+              onSkip={handleCloseCutscenePlayer}
+              characters={{
+                player: 'https://example.com/player-sprite.png',
+                npc1: 'https://example.com/npc1-sprite.png',
+                npc2: 'https://example.com/npc2-sprite.png'
+              }}
+              backgrounds={{
+                default_bg: 'https://example.com/default-bg.jpg',
+                town_bg: 'https://example.com/town-bg.jpg',
+                castle_bg: 'https://example.com/castle-bg.jpg',
+                forest_bg: 'https://example.com/forest-bg.jpg',
+                cave_bg: 'https://example.com/cave-bg.jpg'
+              }}
+            />
+          </div>
+        )}
+        
+        {/* Modal for game settings */}
+        {showGameSettingsEditor && (
+          <div className="modal-overlay">
+            <GameSettingsEditor />
+          </div>
+        )}
     </div>
   );
+  }
+  
+  // This shouldn't be reached, but providing a fallback
+  return <StartScreen />;
 };
 
 // Create a town map
@@ -1137,10 +1806,13 @@ const createTownMap = (): RPGMap => {
     tiles[y][width-1] = { id: `tile_${width-1}_${y}`, ...TILE_TYPES.tree };
   }
   
-  // Add water
+  // Add lake (water tiles) in an L shape away from the player starting area
   for (let y = 3; y < 8; y++) {
     for (let x = 3; x < 8; x++) {
+      // Add water tiles far enough away from player position
+      if (x >= 3 && y >= 3) {
       tiles[y][x] = { id: `tile_${x}_${y}`, ...TILE_TYPES.water };
+      }
     }
   }
   
@@ -1228,6 +1900,129 @@ const createDungeonMap = (): RPGMap => {
       }
     ]
   };
+};
+
+// Handle when a game is started - check for opening cutscene
+const handleStartNewGame = () => {
+  // Set up new game state
+  const newGameState = {
+    currentMap: createTownMap(),
+    player: CHARACTER_TEMPLATES[0],
+    npcs: [
+      { ...CHARACTER_TEMPLATES[1], position: { x: 10, y: 8 } },
+      { ...CHARACTER_TEMPLATES[2], position: { x: 15, y: 12 } }
+    ],
+    variables: {},
+    switches: {},
+    gameTime: 0,
+    inventory: ['Potion', 'Basic Sword']
+  };
+  
+  setGameState(newGameState);
+  setIsPlaying(true);
+  
+  // Check if this map has an opening cutscene and settings allow for it
+  if (gameSettings.playOpeningCutscene && 
+      (newGameState.currentMap as RPGMapWithCutscene).openingCutscene) {
+    // Start in cutscene mode
+    setCutsceneActive(true);
+    setCurrentCutscene((newGameState.currentMap as RPGMapWithCutscene).openingCutscene);
+    setCurrentScreen('cutscene');
+  } else {
+    // Skip to regular gameplay
+    setCurrentScreen('playing');
+  }
+};
+
+// Handle cutscene editing
+const handleEditOpeningCutscene = () => {
+  // Edit the current map's opening cutscene or create a new one
+  const currentMapCopy = { ...gameState.currentMap } as RPGMapWithCutscene;
+  
+  if (!currentMapCopy.openingCutscene) {
+    // Create a default opening cutscene if none exists
+    currentMapCopy.openingCutscene = {
+      id: `cutscene_opening_${Date.now()}`,
+      trigger: 'auto',
+      actions: [
+        {
+          type: 'message',
+          params: { text: 'Welcome to your adventure!' }
+        }
+      ]
+    };
+  }
+  
+  setCurrentEvent(currentMapCopy.openingCutscene);
+  setShowCutsceneEditor(true);
+};
+
+// Save cutscene
+const handleSaveCutscene = (event: RPGEvent) => {
+  // Update the current map with the new opening cutscene
+  setGameState(prev => ({
+    ...prev,
+    currentMap: {
+      ...prev.currentMap,
+      openingCutscene: event
+    }
+  }));
+  
+  setShowCutsceneEditor(false);
+  setCurrentCutscene(null);
+};
+
+// Cancel cutscene editing
+const handleCancelCutscene = () => {
+  setShowCutsceneEditor(false);
+  setCurrentCutscene(null);
+};
+
+// Add game settings editor
+const handleEditGameSettings = () => {
+  // Open game settings modal
+  setShowGameSettingsEditor(true);
+};
+
+// Save game settings
+const handleSaveGameSettings = (settings: any) => {
+  setGameSettings(settings);
+  setShowGameSettingsEditor(false);
+};
+
+// Handle opening the cutscene editor for the map's opening cutscene
+const handleOpeningCutsceneClick = () => {
+  // Create default cutscene if none exists
+  if (!gameState.currentMap.openingCutscene) {
+    const defaultCutscene: RPGEvent = {
+      id: 'opening_cutscene',
+      trigger: 'auto',
+      actions: [{
+        type: 'message',
+        params: { text: 'Welcome to your adventure!' }
+      }]
+    };
+    
+    setCurrentCutscene(defaultCutscene);
+  } else {
+    setCurrentCutscene({ ...gameState.currentMap.openingCutscene });
+  }
+  
+  setShowCutsceneEditor(true);
+};
+
+// Preview the opening cutscene
+const handlePreviewCutscene = () => {
+  if (gameState.currentMap.openingCutscene) {
+    setCurrentCutscene({ ...gameState.currentMap.openingCutscene });
+    setShowCutscenePlayer(true);
+  }
+};
+
+// Close the cutscene player
+const handleCloseCutscenePlayer = () => {
+  setShowCutscenePlayer(false);
+  setCurrentCutscene(null);
 };
 
 export default GameStudio2D; 

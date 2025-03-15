@@ -45,7 +45,24 @@ export interface RPGMap {
     rate: number;
     enemies: string[];
   };
+  openingCutscene?: RPGEvent;
 }
+
+// Event action types
+export type RPGEventActionType = 
+  | 'message' 
+  | 'giveItem' 
+  | 'removeItem' 
+  | 'teleport' 
+  | 'battle' 
+  | 'shop' 
+  | 'setVariable' 
+  | 'setSwitch'
+  | 'wait'
+  | 'changeBackground'
+  | 'showCharacter'
+  | 'hideCharacter'
+  | 'moveCharacter';
 
 export interface RPGEvent {
   id: string;
@@ -57,7 +74,7 @@ export interface RPGEvent {
     itemCheck?: { id: string, hasItem: boolean };
   };
   actions: {
-    type: 'message' | 'giveItem' | 'removeItem' | 'teleport' | 'battle' | 'shop' | 'setVariable' | 'setSwitch';
+    type: RPGEventActionType;
     params: any;
   }[];
   visualScript?: {
@@ -139,4 +156,14 @@ declare global {
       importScript: (scriptId: string) => Promise<any>;
     };
   }
+}
+
+// Fix the GameSetupAPI interface to be consistent
+export interface GameAPI {
+  // ... existing code ...
+  GameSetupAPI?: {
+    createGameSetup: (scene: GameScene, scripts: any[]) => boolean;
+    createCharacterWithMovement: (character: GameObject, script: any) => boolean;
+  };
+  // ... existing code ...
 } 
